@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "67746917873",
+    "project_id": "women-project-2024",
+    "storage_bucket": "women-project-2024.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:67746917873:android:6756f24bc15c1ef04da850",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmwS9_h1U4BYJUHtY3WJU3SqnIlZhxOrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
