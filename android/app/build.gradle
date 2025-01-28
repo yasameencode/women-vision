@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "iq.gov.ur.eyn.womenvision"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 34
         versionCode 3
         versionName "1.0.2"

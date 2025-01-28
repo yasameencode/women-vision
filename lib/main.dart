@@ -223,18 +223,12 @@ Future<void> _initFirebaseMessaging() async {
     sound: true,
   );
 
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+ if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     print('Permission granted');
-    
-    // الحصول على APNs Token
-    String? apnsToken = await messaging.getAPNSToken();
-    print('APNs Token: $apnsToken');
-    
-    // الحصول على Device Token
     String? token = await messaging.getToken();
     if (token != null) {
       print('Device Token: $token');
-      await _sendTokenToServer(token);
+      await _sendTokenToServer(token); // تمرير التوكن بعد التأكد أنه غير null
     } else {
       print('Token is null');
     }
