@@ -20,6 +20,7 @@ import 'login.dart';
 import 'legal_consul/legal_consul_list.dart';
 import 'legal_consul/legal_consul.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'national_team.dart';
 import 'success/success_stories.dart';
 import 'courses/training.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,29 +29,70 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './api/api_NotificationsPage.dart';
-
+import '../theme/appcolors.dart';
+// import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // إعداد إشعارات محلية
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await Firebase.initializeApp(); // تهيئة Firebase
+//   FirebaseMessaging.onBackgroundMessage(
+//       _firebaseMessagingBackgroundHandler); // معالجة رسائل الخلفية
+
+//   // تهيئة الإشعارات المحلية
+//   const AndroidInitializationSettings initializationSettingsAndroid =
+//       AndroidInitializationSettings('@mipmap/ic_launcher');
+
+//   const InitializationSettings initializationSettings = InitializationSettings(
+//     android: initializationSettingsAndroid,
+//   );
+
+//   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+//   runApp(MyApp());
+// }
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // تهيئة Firebase
-  FirebaseMessaging.onBackgroundMessage(
-      _firebaseMessagingBackgroundHandler); // معالجة رسائل الخلفية
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // تهيئة الإشعارات المحلية
+  // إعدادات iOS
+  const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings();
+
+  // إعدادات Android
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
+  // إعدادات عامة
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
   );
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // تهيئة الإشعارات
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) {
+      print('Notification clicked with payload: ${notificationResponse.payload}');
+    },
+  );
 
   runApp(MyApp());
+}
+
+Future<void> onSelectNotification(String? payload) async {
+  // منطقك لمعالجة النقر على الإشعار
+  print('Notification clicked with payload: $payload');
 }
 
 // دالة لمعالجة الرسائل عند وصولها أثناء تشغيل التطبيق في الخلفية
@@ -83,7 +125,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _listenToConnectivityChanges(); // مراقبة حالة الاتصال
+    // _listenToConnectivityChanges(); 
     _loadThemePreference(); // تحميل تفضيلات السمة
     _initFirebaseMessaging(); // تهيئة Firebase Messaging
     fetchAccessToken();
@@ -94,24 +136,22 @@ class _MyAppState extends State<MyApp> {
 
 
 
+// void _listenToConnectivityChanges() {
+//   connectivitySubscription = Connectivity()
+//       .onConnectivityChanged
+//       .listen((ConnectivityResult result) {
+//     setState(() {
+//       isConnected = (result != ConnectivityResult.none); // التحقق من حالة الاتصال
+//       if (!isConnected) {
+//         showNoInternetDialog(); // إذا تم إطفاء الإنترنت، إظهار رسالة تنبيه
+//       }
+//     });
+//   });
+// }
 
 
 
 
-  // مراقبة التغييرات في حالة الاتصال بالإنترنت
-  void _listenToConnectivityChanges() {
-    connectivitySubscription = Connectivity()
-        .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      setState(() {
-        isConnected =
-            (result != ConnectivityResult.none); // التحقق من حالة الاتصال
-        if (!isConnected) {
-          showNoInternetDialog(); // إذا تم إطفاء الإنترنت، إظهار رسالة تنبيه
-        }
-      });
-    });
-  }
 
   // فحص الاتصال بالإنترنت عند بدء التطبيق
   Future<void> checkInternetConnection() async {
@@ -124,23 +164,36 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // عرض رسالة تنبيه عند عدم وجود اتصال بالإنترنت
-  void showNoInternetDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('لا يوجد اتصال بالإنترنت'),
-        content:
-            const Text('يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(), // إغلاق الرسالة
-            child: const Text('إغلاق'),
-          ),
-        ],
+// عرض رسالة تنبيه عند عدم وجود اتصال بالإنترنت
+void showNoInternetDialog() {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // منع إغلاق الحوار عند النقر خارج النافذة
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // زوايا دائرية للإطار
       ),
-    );
-  }
+      title: const Text(
+        'لا يوجد اتصال بالإنترنت',
+        style: TextStyle(fontWeight: FontWeight.bold), // تنسيق العنوان
+      ),
+      content: const Text(
+        'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
+        textAlign: TextAlign.center, // جعل النص في المنتصف
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(), // إغلاق الرسالة
+          child: const Text(
+            'إغلاق',
+            style: TextStyle(color: Colors.black), // لون النص
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
 
   // استدعاء دالة حذف الإشعارات القديمة
@@ -157,39 +210,50 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+
+
   // تهيئة Firebase Messaging لاستقبال الإشعارات
-  Future<void> _initFirebaseMessaging() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+Future<void> _initFirebaseMessaging() async {
+ FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    // طلب إذن الإشعارات
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+  // طلب إذن الإشعارات
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('Permission granted');
-      String? token = await messaging.getToken();
-      if (token != null) {
-        print('Device Token: $token');
-        await _sendTokenToServer(token);
-      }
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('Permission granted');
+    
+    // الحصول على APNs Token
+    String? apnsToken = await messaging.getAPNSToken();
+    print('APNs Token: $apnsToken');
+    
+    // الحصول على Device Token
+    String? token = await messaging.getToken();
+    if (token != null) {
+      print('Device Token: $token');
+      await _sendTokenToServer(token);
     } else {
-      print('Permission denied');
+      print('Token is null');
     }
-
-    // التعامل مع الإشعارات الواردة أثناء فتح التطبيق
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a message: ${message.messageId}');
-      if (message.notification != null) {
-        print(
-            'Notification: ${message.notification!.title}, ${message.notification!.body}');
-        _showNotification(
-            message.notification!.title, message.notification!.body);
-      }
-    });
+  } else {
+    print('Permission denied');
   }
+
+  // التعامل مع الإشعارات الواردة أثناء فتح التطبيق
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Received a message: ${message.messageId}');
+    if (message.notification != null) {
+      String? title = message.notification!.title;
+      String? body = message.notification!.body;
+
+      _showNotification(title, body); // تمرير العنوان والمحتوى بعد التأكد من أنهما غير null
+        }
+  });
+}
+
 
   // دالة لعرض الإشعارات المحلية
   Future<void> _showNotification(String? title, String? body) async {
@@ -286,14 +350,77 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     if (!isConnected) {
-      // عرض شاشة تمنع المستخدم من استخدام التطبيق في حالة عدم وجود اتصال
-      return const MaterialApp(
+      return MaterialApp(
+        debugShowCheckedModeBanner: false, // Remove debug banner
         home: Scaffold(
+          backgroundColor: Colors.black, // Background color for better visual appeal
           body: Center(
-            child: Text('لا يوجد اتصال بالإنترنت. يرجى إعادة المحاولة لاحقًا.'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0), // Add padding for better spacing
+              child: Container(
+                padding: EdgeInsets.all(20.0), // Add padding inside the container
+                decoration: BoxDecoration(
+                  color: Colors.white, // White background for the message box
+                  borderRadius: BorderRadius.circular(15.0), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 3,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // Shadow effect
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.wifi_off, // No internet connection icon
+                      color: Colors.black,
+                      size: 40.0, // Icon size
+                    ),
+                    SizedBox(height: 20), // Add space between icon and text
+                    Text(
+                      'نأسف لايوجد اتصال بألانترنت ..يرجى اعادة الاتصال والمحاولة مرة اخرى',
+                      textAlign: TextAlign.center, // Center the text
+                      style: TextStyle(
+                        fontSize: 18.0, // Text size
+                        fontWeight: FontWeight.bold, // Bold text
+                        color: Colors.black, // Text color
+                      ),
+                    ),
+                    SizedBox(height: 20), // Add space below the text
+                    ElevatedButton(
+                      onPressed: _retryConnection, // Function to retry connection
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:AppColors.primaryColor , // Button color
+                        padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0), // Button padding
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0), // Rounded button
+                        ),
+                      ),
+                      child: Text(
+                        'إعادة الاتصال',
+                        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       );
+      // عرض شاشة تمنع المستخدم من استخدام التطبيق في حالة عدم وجود اتصال
+      // return const MaterialApp(
+      //   debugShowCheckedModeBanner: false,
+      //   home: Scaffold(
+      //     body: Center(
+      //       child: Text('لا يوجد اتصال بالإنترنت. يرجى إعادة المحاولة لاحقًا.'),
+      //     ),
+      //   ),
+      // );
     }
 
     return MaterialApp(
@@ -315,7 +442,7 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => const LoginWidget(),
         '/cards': (context) => const CardsPage(),
         '/skip': (context) => const CardsPage(),
-        '/complaints': (context) => const ComplainPage(),
+        '/complaints': (context) =>  ComplainPage(),
         '/complaints_list': (context) {
           final args = ModalRoute.of(context)?.settings.arguments as Map?;
           final userType = args?['userType'] ?? 0;
@@ -338,9 +465,15 @@ class _MyAppState extends State<MyApp> {
         '/SelffamilyPage': (context) => const SelffamilyPage(),
         '/EfficiantPage': (context) => const EfficiantPage(),
         '/ActivitiesPage': (context) => const ActivitiesPage(),
+        '/national_team': (context) => const national_team(),
+
       },
     );
   }
+}
+
+void _retryConnection() {
+  // Logic to retry the connection
 }
 
 
@@ -502,120 +635,6 @@ Widget build(BuildContext context) {
 }
 
 
-
-
-
-
-// class SplashOrLinkReceiver extends StatefulWidget {
-//   const SplashOrLinkReceiver({super.key});
-
-//   @override
-//   _SplashOrLinkReceiverState createState() => _SplashOrLinkReceiverState();
-// }
-
-// class _SplashOrLinkReceiverState extends State<SplashOrLinkReceiver> {
-//   String? code; // المتغير لحفظ الكود المستخرج من الرابط
-//   bool _isLoading = true; // لمعرفة إذا كانت الصفحة تقوم بتحميل الرابط
-//   bool isConnected = true; // التحقق من الاتصال بالإنترنت
-//   StreamSubscription? _linkSubscription;
-//   StreamSubscription<ConnectivityResult>? connectivitySubscription;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initDeepLinkListener();
-//     _checkInternetConnection(); // فحص حالة الاتصال عند بدء الصفحة
-//   }
-
-//   @override
-//   void dispose() {
-//     _linkSubscription?.cancel(); // إلغاء الاشتراك في تدفق الروابط عند التخلص من الصفحة
-//     connectivitySubscription?.cancel(); // إلغاء الاشتراك في تدفق الاتصال
-//     super.dispose();
-//   }
-
-//   // فحص الاتصال بالإنترنت عند بدء التطبيق
-//   Future<void> _checkInternetConnection() async {
-//     var connectivityResult = await Connectivity().checkConnectivity();
-//     setState(() {
-//       isConnected = (connectivityResult != ConnectivityResult.none);
-//     });
-
-//     // مراقبة التغييرات في حالة الاتصال بالإنترنت
-//     connectivitySubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-//       setState(() {
-//         isConnected = (result != ConnectivityResult.none);
-//       });
-//     });
-//   }
-
-//   Future<void> _initDeepLinkListener() async {
-//     try {
-//       // فحص الرابط العميق الأولي عند بدء التطبيق
-//       final initialUri = await getInitialUri();
-//       if (initialUri != null) {
-//         print('Initial URI received: $initialUri');
-//         _processLink(initialUri);
-//       }
-
-//       // استقبال الروابط الجديدة بعد فتح التطبيق
-//       _linkSubscription = uriLinkStream.listen((Uri? uri) {
-//         if (uri != null) {
-//           print('New URI received: $uri');
-//           _processLink(uri);
-//         }
-//       }, onError: (err) {
-//         print('Failed to receive deep link: $err');
-//       });
-//     } catch (e) {
-//       print('Error retrieving initial link: $e');
-//     } finally {
-//       setState(() {
-//         _isLoading = false; // انتهى التحقق
-//       });
-//     }
-//   }
-
-//   void _processLink(Uri uri) {
-//     // استخراج قيمة `code` من الرابط
-//     final newCode = uri.queryParameters['code'];
-//     if (newCode != null && newCode != code) {
-//       setState(() {
-//         code = newCode;
-//       });
-//       print('Received code: $code');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // عرض شاشة إذا لم يكن هناك اتصال بالإنترنت
-//     if (!isConnected) {
-//       return const Scaffold(
-//         body: Center(
-//           child: Text('لا يوجد اتصال بالإنترنت. يرجى إعادة المحاولة لاحقًا.'),
-//         ),
-//       );
-//     }
-
-//     // عرض شاشة تحميل أثناء التحقق من الرابط
-//     if (_isLoading) {
-//       return const Scaffold(
-//         body: Center(child: CircularProgressIndicator()),
-//       );
-//     }
-
-//     // إذا كان هناك كود، اذهب إلى LinkReceiverPage مع تمرير الكود
-//     if (code != null) {
-//       print('Navigating to LinkReceiverPage with code: $code');
-//       return LinkReceiverPage(code: code); // تمرير الكود إلى LinkReceiverPage
-//     }
-
-//     // إذا لم يكن هناك كود، اذهب إلى SplashScreen
-//     print('No deep link detected, navigating to SplashScreen');
-//     return const SplashScreen();
-//   }
-// }
 
 
 

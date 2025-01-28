@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/appcolors.dart';
 import '../api/api_activities.dart';
 import 'myactivities.dart';
-
+import 'package:flutter_html/flutter_html.dart';
 class ActivitiesPage extends StatefulWidget {
   const ActivitiesPage({super.key});
 
@@ -285,9 +285,303 @@ logoutText = 'Logout';
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
 
+//     return DefaultTabController(
+//       length: 2,
+//       child: Scaffold(
+//         backgroundColor: Colors.white,
+//         body: Stack(
+//
+//           children: [
+//             // AppBar with gradient and custom content
+//             Positioned(
+//               top: 0,
+//               left: 0,
+//               right: 0,
+//               child: Container(
+//                 height: screenHeight * 0.25,
+//                 decoration: const BoxDecoration(
+//                   color: AppColors.secondaryColor,
+//                   image: DecorationImage(
+//
+//                     image: AssetImage('assets/images/appbarnew.jpg'),
+//                     fit: BoxFit.cover,
+//                   ),
+//                 ),
+//                 child: SafeArea(
+//                   child: Padding(
+//                     padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+//                     child: Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       children: [
+//                         CircleAvatar(
+//                           backgroundColor: AppColors.backgroundColor,
+//                           radius: screenWidth * 0.06,
+//                           child: IconButton(
+//                             icon: const Icon(
+//                               Icons.arrow_back_ios_rounded,
+//                               color: Colors.black,
+//                               size: 18,
+//                             ),
+//                             onPressed: () {
+//                               Navigator.of(context).pop();
+//                             },
+//                           ),
+//                         ),
+//                     PopupMenuButton<int>(
+//   icon: SvgPicture.asset(
+//     'assets/images/menu.svg',
+//     width: 24,
+//     height: 24,
+//     color: const Color.fromARGB(255, 255, 255, 255),
+//   ),
+//   itemBuilder: (context) => [
+//     if (userId != null) // Conditionally show the logout option
+//       PopupMenuItem(
+//         value: 1,
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
+//             const SizedBox(width: 8),
+//             Text(logoutText),
+//           ],
+//         ),
+//       ),
+//     const PopupMenuItem(
+//       value: 2,
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Icon(Icons.language, color: Colors.black),
+//           SizedBox(width: 8),
+//           Text('العربية'),
+//         ],
+//       ),
+//     ),
+//     const PopupMenuItem(
+//       value: 3,
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Icon(Icons.language, color: Colors.black),
+//           SizedBox(width: 8),
+//           Text('English'),
+//         ],
+//       ),
+//     ),
+//   ],
+//   onSelected: (value) {
+//     if (value == 1) {
+//       if (userId != null) {
+//         _logout(); // Perform logout if user is logged in
+//       } else {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
+//         );
+//       }
+//     } else if (value == 2) {
+//       setState(() {
+//         lang = 'ar'; // Switch to Arabic
+//       });
+//       _fetchDataBasedOnLanguage(lang);
+//     } else if (value == 3) {
+//       setState(() {
+//         lang = 'en'; // Switch to English
+//       });
+//       _fetchDataBasedOnLanguage(lang);
+//     }
+//   },
+// ),
+//
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//
+//             Positioned(
+//               top: 180,
+//               left: 0,
+//               right: 0,
+//               child: Center(
+//                 child: Container(
+//                   width: 327,
+//                   height: 90,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(12),
+//                     color: Colors.white,
+//                     boxShadow: [
+//                       BoxShadow(
+//                         color: Colors.black.withOpacity(0.1),
+//                         spreadRadius: 2,
+//                         blurRadius: 8,
+//                       ),
+//                     ],
+//                   ),
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(12.0),
+//                     child: Column(
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       crossAxisAlignment: CrossAxisAlignment.center,
+//                       children: [
+//                         Text(
+//                           title,
+//                           style: GoogleFonts.tajawal(
+//                             fontSize: 18,
+//                             color: AppColors.headerColor,
+//                             fontWeight: FontWeight.w700,
+//                           ),
+//                           textAlign: TextAlign.center,
+//                         ),
+//                         Text(
+//                           subtitle,
+//                           style: GoogleFonts.tajawal(
+//                             fontSize: 12,
+//                             color: AppColors.textColor,
+//                           ),
+//                           textAlign: TextAlign.center,
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//
+//             // Body content with search box and TabBar
+//             Positioned.fill(
+//               top: 300,
+//               child: Padding(
+//                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
+//                 child: Column(
+//                   children: [
+//                     // Search Box based on the active tab
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: TextField(
+//                             decoration: InputDecoration(
+//                               hintText: searchHint,
+//                               prefixIcon: const Icon(Icons.search),
+//                               filled: true,
+//                               fillColor: Colors.grey[200],
+//                               border: OutlineInputBorder(
+//                                 borderRadius: BorderRadius.circular(8),
+//                                 borderSide: BorderSide.none,
+//                               ),
+//                             ),
+//                             onChanged: (query) {
+//                               setState(() {
+//                                 _searchQuery = query;
+//                                 if (_selectedTabIndex == 0) {
+//                                   _fetchactivitiesl();
+//                                 } else if (_selectedTabIndex == 1) {
+//                                   _filterother();
+//                                 }
+//                               });
+//                             },
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(height: 20),
+//
+//                     // TabBar
+//                     TabBar(
+//                       controller:_tabController ,
+//                       indicator: BoxDecoration(
+//                             color: AppColors.primaryColor,
+//                         borderRadius: BorderRadius.circular(12),
+//
+//                       ),
+//                       labelColor: Colors.grey,
+//                       unselectedLabelColor: Colors.grey,
+//                       onTap: _onTabTapped,
+//                       tabs: [
+//                         Tab(
+//                           child: Container(
+//                             decoration: BoxDecoration(
+//                               borderRadius: BorderRadius.circular(12),
+//                               border: Border.all(
+//                                color: _selectedTabIndex == 0
+//                               ? Colors.grey // No border for selected tab
+//                             : const Color(0xFF6B7280), // Border for unselected tabs
+//
+//                               ),
+//                             ),
+//                             child: Center(child: Text(womenTab,
+//                           style: TextStyle(
+//               color: _selectedTabIndex == 0
+//                   ? Colors.grey // White text for selected tab
+//                   : Colors.grey, // Black text for unselected tabs
+//             ),)),
+//                           ),
+//                         ),
+//                         Tab(
+//                           child: Container(
+//                             decoration: BoxDecoration(
+//                               borderRadius: BorderRadius.circular(12),
+//                             border: Border.all(
+//                                color: _selectedTabIndex == 1
+//                               ? Colors.grey // No border for selected tab
+//                             : const Color(0xFF6B7280), // Border for unselected tabs
+//
+//                               ),
+//                             ),
+//                             child: Center(child: Text(childTab,
+//                             style: TextStyle(
+//               color: _selectedTabIndex == 0
+//                   ? Colors.grey // White text for selected tab
+//                   : Colors.grey, // Black text for unselected tabs
+//             ),  )),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(height: 20),
+//
+//                     // TabBarView for women health and child health content
+//                     Expanded(
+//                       child: TabBarView(
+//                         children: [
+//                           _isLoading
+//                               ? const Center(child: CircularProgressIndicator())
+//                               : _buildListView(
+//                                   filteredWomenHealthImages,
+//                                   filteredWomenHealthTitles,
+//                                   filteredWomenHealthDescriptions,
+//                                   filteredWomenHealthDates,
+//                                 ),
+//                           _isLoading
+//                               ? const Center(child: CircularProgressIndicator())
+//                               : _buildListView(
+//                                   filteredChildHealthImages,
+//                                   filteredChildHealthTitles,
+//                                   filteredChildHealthDescriptions,
+//                                   filteredChildHealthDates,
+//                                 ),
+//                         ],
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//         bottomNavigationBar: CustomBottomNavigationBar(
+//           currentIndex: _selectedIndex,
+//           onItemTapped: _onItemTapped,
+//           lang: lang,
+//
+//         ),
+//       ),
+//     );
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
             // AppBar with gradient and custom content
@@ -296,9 +590,13 @@ logoutText = 'Logout';
               left: 0,
               right: 0,
               child: Container(
-                height: screenHeight * 0.20,
+                height: screenHeight * 0.25,
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryColor,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/appbarnew.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -320,72 +618,71 @@ logoutText = 'Logout';
                             },
                           ),
                         ),
-                    PopupMenuButton<int>(
-  icon: SvgPicture.asset(
-    'assets/images/menu.svg',
-    width: 24,
-    height: 24,
-    color: const Color.fromARGB(255, 255, 255, 255),
-  ),
-  itemBuilder: (context) => [
-    if (userId != null) // Conditionally show the logout option
-      PopupMenuItem(
-        value: 1,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
-            const SizedBox(width: 8),
-            Text(logoutText),
-          ],
-        ),
-      ),
-    const PopupMenuItem(
-      value: 2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.language, color: Colors.black),
-          SizedBox(width: 8),
-          Text('العربية'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 3,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.language, color: Colors.black),
-          SizedBox(width: 8),
-          Text('English'),
-        ],
-      ),
-    ),
-  ],
-  onSelected: (value) {
-    if (value == 1) {
-      if (userId != null) {
-        _logout(); // Perform logout if user is logged in
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
-        );
-      }
-    } else if (value == 2) {
-      setState(() {
-        lang = 'ar'; // Switch to Arabic
-      });
-      _fetchDataBasedOnLanguage(lang);
-    } else if (value == 3) {
-      setState(() {
-        lang = 'en'; // Switch to English
-      });
-      _fetchDataBasedOnLanguage(lang);
-    }
-  },
-),
-
+                        PopupMenuButton<int>(
+                          icon: SvgPicture.asset(
+                            'assets/images/menu.svg',
+                            width: 24,
+                            height: 24,
+                            color: const Color.fromARGB(255, 255, 255, 255),
+                          ),
+                          itemBuilder: (context) => [
+                            if (userId != null) // Conditionally show the logout option
+                              PopupMenuItem(
+                                value: 1,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
+                                    const SizedBox(width: 8),
+                                    Text(logoutText),
+                                  ],
+                                ),
+                              ),
+                            const PopupMenuItem(
+                              value: 2,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.language, color: Colors.black),
+                                  SizedBox(width: 8),
+                                  Text('العربية'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 3,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.language, color: Colors.black),
+                                  SizedBox(width: 8),
+                                  Text('English'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value == 1) {
+                              if (userId != null) {
+                                _logout(); // Perform logout if user is logged in
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
+                                );
+                              }
+                            } else if (value == 2) {
+                              setState(() {
+                                lang = 'ar'; // Switch to Arabic
+                              });
+                              _fetchDataBasedOnLanguage(lang);
+                            } else if (value == 3) {
+                              setState(() {
+                                lang = 'en'; // Switch to English
+                              });
+                              _fetchDataBasedOnLanguage(lang);
+                            }
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -394,7 +691,7 @@ logoutText = 'Logout';
             ),
 
             Positioned(
-              top: 130,
+              top: 180,
               left: 0,
               right: 0,
               child: Center(
@@ -444,7 +741,7 @@ logoutText = 'Logout';
 
             // Body content with search box and TabBar
             Positioned.fill(
-              top: 240,
+              top: 300,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -482,11 +779,10 @@ logoutText = 'Logout';
 
                     // TabBar
                     TabBar(
-                      controller:_tabController ,
+                      controller: _tabController,
                       indicator: BoxDecoration(
-                            color: AppColors.primaryColor,
+                        color: AppColors.primaryColor,
                         borderRadius: BorderRadius.circular(12),
-                      
                       ),
                       labelColor: Colors.grey,
                       unselectedLabelColor: Colors.grey,
@@ -497,37 +793,41 @@ logoutText = 'Logout';
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                               color: _selectedTabIndex == 0
-                              ? Colors.grey // No border for selected tab
-                            : const Color(0xFF6B7280), // Border for unselected tabs
-                            
+                                color: _selectedTabIndex == 0
+                                    ? Colors.grey // No border for selected tab
+                                    : const Color(0xFF6B7280), // Border for unselected tabs
                               ),
                             ),
-                            child: Center(child: Text(womenTab,
-                          style: TextStyle(
-              color: _selectedTabIndex == 0
-                  ? Colors.grey // White text for selected tab
-                  : Colors.grey, // Black text for unselected tabs
-            ),)),
+                            child: Center(
+                              child: Text(
+                                womenTab,
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
+                                  color: _selectedTabIndex == 0 ? Colors.grey : Colors.grey, // Maintain grey color
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                         Tab(
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                               color: _selectedTabIndex == 1
-                              ? Colors.grey // No border for selected tab
-                            : const Color(0xFF6B7280), // Border for unselected tabs
-                            
+                              border: Border.all(
+                                color: _selectedTabIndex == 1
+                                    ? Colors.grey // No border for selected tab
+                                    : const Color(0xFF6B7280), // Border for unselected tabs
                               ),
                             ),
-                            child: Center(child: Text(childTab,
-                            style: TextStyle(
-              color: _selectedTabIndex == 0
-                  ? Colors.grey // White text for selected tab
-                  : Colors.grey, // Black text for unselected tabs
-            ),  )),
+                            child: Center(
+                              child: Text(
+                                childTab,
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
+                                  color: _selectedTabIndex == 1 ? Colors.grey : Colors.grey, // Maintain grey color
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -541,19 +841,19 @@ logoutText = 'Logout';
                           _isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : _buildListView(
-                                  filteredWomenHealthImages,
-                                  filteredWomenHealthTitles,
-                                  filteredWomenHealthDescriptions,
-                                  filteredWomenHealthDates,
-                                ),
+                            filteredWomenHealthImages,
+                            filteredWomenHealthTitles,
+                            filteredWomenHealthDescriptions,
+                            filteredWomenHealthDates,
+                          ),
                           _isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : _buildListView(
-                                  filteredChildHealthImages,
-                                  filteredChildHealthTitles,
-                                  filteredChildHealthDescriptions,
-                                  filteredChildHealthDates,
-                                ),
+                            filteredChildHealthImages,
+                            filteredChildHealthTitles,
+                            filteredChildHealthDescriptions,
+                            filteredChildHealthDates,
+                          ),
                         ],
                       ),
                     ),
@@ -567,10 +867,10 @@ logoutText = 'Logout';
           currentIndex: _selectedIndex,
           onItemTapped: _onItemTapped,
           lang: lang,
-
         ),
       ),
     );
+
   }
 
   // Method to build the list views for women health and child health articles
@@ -622,12 +922,14 @@ logoutText = 'Logout';
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
+                        Html(
+                          data: shortDescription,
+                          style: {
+                            "body": Style(
+                              fontSize: FontSize(12.0),
+                              color: AppColors.textColor,
+                            ),
+                          },
                         ),
                         const SizedBox(height: 4),
                         Row(

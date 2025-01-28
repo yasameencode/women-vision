@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 class otherpage extends StatelessWidget {
   final String title;
   final String image;
@@ -19,6 +20,7 @@ class otherpage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           // Top Container for Image and Forward Arrow Button
@@ -27,7 +29,8 @@ class otherpage extends StatelessWidget {
               // Image Container (350x200)
               Container(
                 width: double.infinity,
-                height: 375, // Fixed height
+                // height: 375, // Fixed height
+                height: MediaQuery.of(context).size.height * 0.4,
                 decoration: BoxDecoration(
                   color: Colors.white, // Placeholder color
                   borderRadius: const BorderRadius.only(
@@ -129,28 +132,33 @@ class otherpage extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Container(
-    width: double.infinity, // Full width with respect to its parent
-    padding: const EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    constraints: const BoxConstraints(
-      minHeight: 100, // Set a minimum height
-    ),
-    child: Text(
-      description,
-      style: GoogleFonts.tajawal(
-        fontWeight: FontWeight.w400,
-        fontSize: 14,
-        color: Colors.black,
-      ),
-    ),
-  ),
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Html(
+                  data: description,
+                  onAnchorTap: (String? url, _, __) {
+                    if (url != null) {
+                      _launchUrl(url);
+                    }
+                  },
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint('Could not launch $url');
+    }
   }
 }

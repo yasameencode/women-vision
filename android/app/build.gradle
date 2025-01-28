@@ -6,22 +6,22 @@ plugins {
 }
 
 android {
-    namespace "com.example.flutter_application_1"
+    namespace "iq.gov.ur.eyn.womenvision"
     compileSdk 34 // توافق مع مكتبة uni_links2
 
     defaultConfig {
-        applicationId "com.example.flutter_application_1"
+        applicationId "iq.gov.ur.eyn.womenvision"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.2"
     }
 
-    signingConfigs {
-        release {
+    signingConfigs {cd
+        release {cd
             keyAlias 'women_project_key'
             keyPassword 'women_project'
-            storeFile file('C:/Users/godfa/release-key.jks') // تحقق من وجود الملف في المسار المذكور.
+            storeFile file('C:/Users/Lenovo/Desktop/womenapp/release-key.jks') // تحقق من وجود الملف في المسار المذكور.
             storePassword 'women_project'
         }
     }

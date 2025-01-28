@@ -10,6 +10,7 @@ import '../api/api_training.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_html/flutter_html.dart';
 
 class TrainingPage extends StatefulWidget {
   const TrainingPage({super.key});
@@ -359,370 +360,383 @@ Future<void> _logout() async {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-
-    return DefaultTabController(
-      length: 3,
-      initialIndex: 0,
-      child: Scaffold(
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: screenHeight * 0.25,
-                decoration: const BoxDecoration(
-                  color: AppColors.secondaryColor,
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: screenWidth * 0.06,
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back_ios_rounded,
-                              color: Colors.black,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ),
-                      PopupMenuButton<int>(
-  icon: SvgPicture.asset(
-    'assets/images/menu.svg',
-    width: 24,
-    height: 24,
-    color: const Color.fromARGB(255, 255, 255, 255),
-  ),
-  itemBuilder: (context) => [
-    if (userId != null) // Conditionally show the logout option
-      PopupMenuItem(
-        value: 1,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
-            const SizedBox(width: 8),
-            Text(logoutText),
-          ],
-        ),
-      ),
-    const PopupMenuItem(
-      value: 2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+return Container(
+  color:Colors.white,
+  child: DefaultTabController(
+    length: 3,
+    initialIndex: 0,
+    child: Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
         children: [
-          Icon(Icons.language, color: Colors.black),
-          SizedBox(width: 8),
-          Text('العربية'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 3,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.language, color: Colors.black),
-          SizedBox(width: 8),
-          Text('English'),
-        ],
-      ),
-    ),
-  ],
-  onSelected: (value) {
-    if (value == 1) {
-      if (userId != null) {
-        _logout(); // Perform logout if user is logged in
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
-        );
-      }
-    } else if (value == 2) {
-      setState(() {
-        lang = 'ar'; // Switch to Arabic
-      });
-      _fetchDataBasedOnLanguage(lang);
-    } else if (value == 3) {
-      setState(() {
-        lang = 'en'; // Switch to English
-      });
-      _fetchDataBasedOnLanguage(lang);
-    }
-  },
-),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: screenHeight * 0.25,
+              decoration: const BoxDecoration(
+                color: AppColors.secondaryColor,
+                image: DecorationImage(
 
-                      ],
-                    ),
-                  ),
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-            Positioned(
-              top: 180,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 327,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 8,
+              child: SafeArea(
+                child: Padding(
+                  padding:
+                  EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: screenWidth * 0.06,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: Colors.black,
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       ),
+                      PopupMenuButton<int>(
+                        icon: SvgPicture.asset(
+                          'assets/images/menu.svg',
+                          width: 24,
+                          height: 24,
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                        itemBuilder: (context) => [
+                          if (userId != null) // Conditionally show the logout option
+                            PopupMenuItem(
+                              value: 1,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
+                                  const SizedBox(width: 8),
+                                  Text(logoutText),
+                                ],
+                              ),
+                            ),
+                          const PopupMenuItem(
+                            value: 2,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.language, color: Colors.black),
+                                SizedBox(width: 8),
+                                Text('العربية'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 3,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.language, color: Colors.black),
+                                SizedBox(width: 8),
+                                Text('English'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          if (value == 1) {
+                            if (userId != null) {
+                              _logout(); // Perform logout if user is logged in
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
+                              );
+                            }
+                          } else if (value == 2) {
+                            setState(() {
+                              lang = 'ar'; // Switch to Arabic
+                            });
+                            _fetchDataBasedOnLanguage(lang);
+                          } else if (value == 3) {
+                            setState(() {
+                              lang = 'en'; // Switch to English
+                            });
+                            _fetchDataBasedOnLanguage(lang);
+                          }
+                        },
+                      ),
+
                     ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.tajawal(
-                            fontSize: 18,
-                            color: AppColors.headerColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          subtitle,
-                          style: GoogleFonts.tajawal(
-                            fontSize: 12,
-                            color: AppColors.textColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ),
-            Positioned.fill(
-              top: 300,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  children: [
-                    // عرض مربع البحث بناءً على التبويب النشط
-                    if (_selectedTabIndex == 0)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: searchArticleHint,
-                                prefixIcon: const Icon(Icons.search),
-                                filled: true,
-                                fillColor: Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (query) {
-                                setState(() {
-                                  _articleSearchQuery = query;
-                                  _fetchtrainincours(userType!);
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (_selectedTabIndex == 1)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: searchJobHint,
-                                prefixIcon: const Icon(Icons.search),
-                                filled: true,
-                                fillColor: Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (query) {
-                                setState(() {
-                                  _searchQuery = query;
-                                  _fetchworkshop(userType!);
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (_selectedTabIndex == 2)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: searchEventHint,
-                                prefixIcon: const Icon(Icons.search),
-                                filled: true,
-                                fillColor: Colors.grey[200],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onChanged: (query) {
-                                setState(() {
-                                  _eventSearchQuery = query;
-                                  _fetchother(userType!);
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 20),
-                    TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                          color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                        
-                      ),
-                      labelColor: Colors.grey,
-                      unselectedLabelColor: Colors.grey,
-                      onTap: (index) {
-                        setState(() {
-                          _selectedTabIndex = index; // تغيير التبويب النشط
-                        });
-                        if (index == 0) {
-                          _fetchtrainincours(userType!);
-                        } else if (index == 1) {
-                          _fetchworkshop(userType!);
-                        } else if (index == 2) {
-                          _fetchother(userType!);
-                        }
-                      },
-                      tabs: [
-                        Tab(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                               color: _selectedTabIndex == 0
-                              ? Colors.grey // No border for selected tab
-                            : const Color(0xFF6B7280), // Border for unselected tabs
-                            
-                              ),
-                            ),
-                            child: Center(child: Text(articlesTab,
-                      style: TextStyle(
-              color: _selectedTabIndex == 0
-                  ? Colors.grey // White text for selected tab
-                  : Colors.grey, // Black text for unselected tabs
-            ),)),
-                          ),
-                        ),
-                        Tab(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                               color: _selectedTabIndex == 1
-                              ? Colors.grey // No border for selected tab
-                            : const Color(0xFF6B7280), // Border for unselected tabs
-                            
-                              ),
-                            ),
-                            child: Center(child: Text(jobsTab, 
-                             style: TextStyle(
-              color: _selectedTabIndex == 0
-                  ? Colors.grey // White text for selected tab
-                  : Colors.grey, // Black text for unselected tabs
-            ),
-                            )),
-                          ),
-                        ),
-                        Tab(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                               color: _selectedTabIndex == 2
-                              ? Colors.grey // No border for selected tab
-                            : const Color(0xFF6B7280), // Border for unselected tabs
-                            
-                              ),
-                            ),
-                            child: Center(child: Text(eventsTab,
-                             style: TextStyle(
-              color: _selectedTabIndex ==2
-                  ? Colors.grey // White text for selected tab
-                  : Colors.grey, // Black text for unselected tabs
-            ),)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _buildVerticalListView(
-                                  filteredArticleImages,
-                                  filteredArticleTitles,
-                                  filteredArticleDescriptions,
-                                  filteredArticlesDates), // مقالات
-                          _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _buildJobListView(
-                                  filteredJobImages,
-                                  filteredJobTitles,
-                                  filteredJobDescriptions,
-                                  filteredJobDates), // فرص عمل
-                          _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _buildEventListView(
-                                  filteredEventImages,
-                                  filteredEventTitles,
-                                  filteredEventDescriptions,
-                                  filteredEventDates), // أحداث أخرى
-                        ],
-                      ),
+          ),
+          Positioned(
+            top: 180,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 327,
+                height: 90,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 8,
                     ),
                   ],
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.tajawal(
+                          fontSize: 18,
+                          color: AppColors.headerColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.tajawal(
+                          fontSize: 12,
+                          color: AppColors.textColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-          lang: lang,
-        ),
+          ),
+          Positioned.fill(
+            top: 300,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  // عرض مربع البحث بناءً على التبويب النشط
+                  if (_selectedTabIndex == 0)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: searchArticleHint,
+                              prefixIcon: const Icon(Icons.search),
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (query) {
+                              setState(() {
+                                _articleSearchQuery = query;
+                                _fetchtrainincours(userType!);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (_selectedTabIndex == 1)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: searchJobHint,
+                              prefixIcon: const Icon(Icons.search),
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (query) {
+                              setState(() {
+                                _searchQuery = query;
+                                _fetchworkshop(userType!);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (_selectedTabIndex == 2)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: searchEventHint,
+                              prefixIcon: const Icon(Icons.search),
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (query) {
+                              setState(() {
+                                _eventSearchQuery = query;
+                                _fetchother(userType!);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
+                  TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+
+                    ),
+                    labelColor: Colors.grey,
+                    unselectedLabelColor: Colors.grey,
+                    onTap: (index) {
+                      setState(() {
+                        _selectedTabIndex = index; // تغيير التبويب النشط
+                      });
+                      if (index == 0) {
+                        _fetchtrainincours(userType!);
+                      } else if (index == 1) {
+                        _fetchworkshop(userType!);
+                      } else if (index == 2) {
+                        _fetchother(userType!);
+                      }
+                    },
+                    tabs: [
+                      Tab(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedTabIndex == 0
+                                  ? Colors.grey // No border for selected tab
+                                  : const Color(0xFF6B7280), // Border for unselected tabs
+
+                            ),
+                          ),
+                          child: Center(child: Text(articlesTab,
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
+                              color: _selectedTabIndex == 0
+                                  ? Colors.grey // White text for selected tab
+                                  : Colors.grey, // Black text for unselected tabs
+                            ),)),
+                        ),
+                      ),
+                      Tab(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedTabIndex == 1
+                                  ? Colors.grey // No border for selected tab
+                                  : const Color(0xFF6B7280), // Border for unselected tabs
+
+                            ),
+                          ),
+                          child: Center(child: Text(jobsTab,
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
+                              color: _selectedTabIndex == 0
+                                  ? Colors.grey // White text for selected tab
+                                  : Colors.grey, // Black text for unselected tabs
+                            ),
+                          )),
+                        ),
+                      ),
+                      Tab(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedTabIndex == 2
+                                  ? Colors.grey // No border for selected tab
+                                  : const Color(0xFF6B7280), // Border for unselected tabs
+
+                            ),
+                          ),
+                          child: Center(child: Text(eventsTab,
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
+                              color: _selectedTabIndex ==2
+                                  ? Colors.grey // White text for selected tab
+                                  : Colors.grey, // Black text for unselected tabs
+                            ),)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _buildVerticalListView(
+                            filteredArticleImages,
+                            filteredArticleTitles,
+                            filteredArticleDescriptions,
+                            filteredArticlesDates), // مقالات
+                        _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _buildJobListView(
+                            filteredJobImages,
+                            filteredJobTitles,
+                            filteredJobDescriptions,
+                            filteredJobDates), // فرص عمل
+                        _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _buildEventListView(
+                            filteredEventImages,
+                            filteredEventTitles,
+                            filteredEventDescriptions,
+                            filteredEventDates), // أحداث أخرى
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-    );
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+        lang: lang,
+      ),
+    ),
+  ),
+);
+
+
   }
 
   Widget _buildVerticalListView(List<String> images, List<String> titles,
@@ -794,13 +808,14 @@ Future<void> _logout() async {
                           textAlign: TextAlign.right,
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
-                          textAlign: TextAlign.right,
+                        Html(
+                          data: shortDescription,
+                          style: {
+                            "body": Style(
+                              fontSize: FontSize(12.0),
+                              color: AppColors.textColor,
+                            ),
+                          },
                         ),
                       ],
                     ),
@@ -1045,4 +1060,5 @@ Future<void> _logout() async {
       ),
     );
   }
+
 }

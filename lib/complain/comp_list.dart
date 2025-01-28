@@ -267,90 +267,90 @@ Future<void> _logout() async {
 }
 
   @override
+
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: PreferredSize(
-              preferredSize: const Size.fromHeight(180),
-            child: LayoutBuilder(
-  builder: (context, constraints) {
-    print("Width: ${constraints.maxWidth}, Height: ${constraints.maxHeight}");
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1C1C1C),
-            Color(0xFF1C1C1C),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: AppBar(
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 18.5,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.black),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-            PopupMenuButton<int>(
-              icon: SvgPicture.asset(
-                'assets/images/menu.svg',
-                width: 24,
-                height: 24,
-                color: const Color.fromARGB(255, 255, 255, 255),
-              ),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text('تسجيل خروج'),
-                    ],
-                  ),
+            child: Container(
+              height: screenHeight * 0.25,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF1C1C1C),
+                    Color(0xFF1C1C1C),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-              onSelected: (value) {
-                if (value == 1) {
-                  _logout();
-                }
-              },
-            ),
-          ],
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-    );
-  },
-),
-
+                image: DecorationImage(
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: AppBar(
+                automaticallyImplyLeading: false,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 18.5,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.black),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                    PopupMenuButton<int>(
+                      icon: SvgPicture.asset(
+                        'assets/images/menu.svg',
+                        width: 24,
+                        height: 24,
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.logout, color: Colors.black),
+                              SizedBox(width: 8),
+                              Text('تسجيل خروج'),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        if (value == 1) {
+                          _logout();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
             ),
           ),
           Positioned(
-            top: 70,
+            top: 180,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
                 width: 327,
-                height: 100,
+                height: 90,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: Colors.white,
@@ -380,131 +380,140 @@ Future<void> _logout() async {
               ),
             ),
           ),
-          Positioned.fill(
-            top: 180,
-            child: Column(
-              children: [
-                Container(
-                  width: 351,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD3D3D3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: Colors.grey[600]),
-                      Expanded(
-                        child: TextField(
-                          controller: searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'بحث',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                          ),
-                          style: GoogleFonts.tajawal(fontSize: 16),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  'الشكاوى السابقة',
-                  style: GoogleFonts.tajawal(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: const Color(0xec000000),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                Expanded(
-                  child: isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : filteredTitles.isEmpty
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                              SvgPicture.asset(
-  'assets/images/File searching-rafiki 1.svg', // المسار الصحيح لملف SVG
-  width: 100,
-  height: 100,
-),
-                                const SizedBox(height: 20),
-                                Text(
-                                  'لا توجد شكاوى لعرضها حاليًا',
-                                  style: GoogleFonts.tajawal(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    color: const Color(0xec000000),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              itemCount: filteredTitles.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/images/agenda.svg',
-                                        width: 24,
-                                        height: 24,
-                                        color: AppColors.buttonColor,
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          filteredTitles[index]['name'] ?? 'لايوجد عنوان',
-                                          style: GoogleFonts.tajawal(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
-                                            color: const Color(0xec000000),
-                                          ),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    _showSubmissionDialog(index);
-                                  },
-                                );
-                              },
-                            ),
-                ),
-              ],
-            ),
+Positioned.fill(
+  top: 300,
+  child: Padding(
+    padding: const EdgeInsets.only(bottom: 80.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 351,
+          height: 50,
+          decoration: BoxDecoration(
+            color: const Color(0xFFD3D3D3),
+            borderRadius: BorderRadius.circular(12),
           ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/complaints',
-                  arguments: {'userType': widget.userType},
-                );
-              },
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: AppColors.buttonColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
+          child: Row(
+            children: [
+              Icon(Icons.search, color: Colors.grey[600]),
+              Expanded(
+                child: TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'بحث',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  style: GoogleFonts.tajawal(fontSize: 16),
                 ),
               ),
-            ),
+            ],
           ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'الشكاوى السابقة',
+          style: GoogleFonts.tajawal(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: const Color(0xec000000),
+          ),
+        ),
+        Expanded(
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filteredTitles.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/File searching-rafiki 1.svg',
+                          width: 100,
+                          height: 100,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'لا توجد شكاوى لعرضها حاليًا',
+                          style: GoogleFonts.tajawal(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: const Color(0xec000000),
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: filteredTitles.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          title: Row(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/images/agenda.svg',
+                                width: 24,
+                                height: 24,
+                                color: AppColors.buttonColor,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  filteredTitles[index]['name'] ?? 'لايوجد عنوان',
+                                  style: GoogleFonts.tajawal(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                    color: const Color(0xec000000),
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            _showSubmissionDialog(index);
+                          },
+                        );
+                      },
+                    ),
+        ),
+      ],
+    ),
+  ),
+),
+         Positioned(
+  bottom: 20,
+  left: 20,
+  child: GestureDetector(
+    onTap: () {
+      try {
+        Navigator.pushNamed(
+          context,
+          '/complaints',
+          arguments: {'userType': widget.userType},
+        );
+      } catch (e) {
+        print("Error during navigation: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("خطأ أثناء التنقل: $e")),
+        );
+      }
+    },
+    child: Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppColors.buttonColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.add,
+        color: Colors.white,
+      ),
+    ),
+  ),
+),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
@@ -514,4 +523,5 @@ Future<void> _logout() async {
       ),
     );
   }
+
 }

@@ -34,7 +34,10 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData(); // استدعاء الدالة لجلب البيانات
   }
 
-  // دالة لجلب بيانات المستخدم من ApiService
+
+
+
+// دالة لجلب بيانات المستخدم من ApiService
 Future<void> _loadUserData() async {
   final data = await apiService.fetchUserData();
   if (data != null) {
@@ -48,6 +51,7 @@ Future<void> _loadUserData() async {
     print('No user data received.');
   }
 }
+
 
 
   // دالة للتحقق من وجود إشعارات غير مقروءة
@@ -98,18 +102,37 @@ Future<void> _logout() async {
 }
 
 // دالة لاختيار الصورة من معرض الصور
-  Future<void> _pickImage() async {
-    final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      setState(() {
-        _selectedImage = File(pickedImage.path);
-      });
-      // رفع أو تحديث الصورة في الخادم
-      await _uploadImage();
-      // بعد الرفع، قم بتحديث واجهة المستخدم
-      await _loadUserData();
+ Future<void> _pickImage() async {
+  final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (pickedImage != null) {
+    final file = File(pickedImage.path);
+    final fileSize = await file.length(); // حجم الملف بالبايت
+
+    // التحقق من حجم الصورة
+    if (fileSize > 500 * 1024) {
+      // إظهار Snackbar عند اختيار صورة أكبر من 500 كيلوبايت
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حجم الصورة كبير جدًا! يرجى اختيار صورة بحجم أقل من 500 كيلوبايت.'),
+          
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
     }
+
+    setState(() {
+      _selectedImage = file;
+    });
+
+    // رفع أو تحديث الصورة في الخادم
+    await _uploadImage();
+
+    // بعد الرفع، قم بتحديث واجهة المستخدم
+    await _loadUserData();
   }
+}
 
   // دالة لرفع أو تحديث الصورة
 Future<void> _uploadImage() async {

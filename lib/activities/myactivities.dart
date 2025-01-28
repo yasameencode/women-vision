@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_html/flutter_html.dart';
 class myactivpage extends StatelessWidget {
   final String title;
   final String image;
@@ -20,6 +21,7 @@ class myactivpage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           // Top Container for Image and Forward Arrow Button
@@ -28,7 +30,8 @@ class myactivpage extends StatelessWidget {
               // Image Container (350x200)
               Container(
                 width: double.infinity,
-                height: 375, // Fixed height
+                // height: 375, // Fixed height
+                height: MediaQuery.of(context).size.height * 0.4,
                 decoration: BoxDecoration(
                   color: Colors.white, // Placeholder color
                   borderRadius: const BorderRadius.only(
@@ -127,25 +130,25 @@ class myactivpage extends StatelessWidget {
           // Scrollable Container for the Description
           Expanded(
             child: SingleChildScrollView(
-                child: Container(
-    width: double.infinity, // Full width with respect to its parent
-    padding: const EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    constraints: const BoxConstraints(
-      minHeight: 100, // Set a minimum height
-    ),
-    child: Text(
-      description,
-      style: GoogleFonts.tajawal(
-        fontWeight: FontWeight.w400,
-        fontSize: 14,
-        color: Colors.black,
-      ),
-    ),
-  ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Html(
+                  data: description,
+                  style: {
+                    "body": Style(
+                      fontSize: FontSize(14.0),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontFamily: GoogleFonts.tajawal().fontFamily,
+                    ),
+                  },
+                ),
+              ),
             ),
           ),
         ],

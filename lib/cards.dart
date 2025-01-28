@@ -6,7 +6,7 @@ import 'variable.dart';
 import 'theme/appcolors.dart';
 import 'buttomnav.dart';
 import 'dart:convert';
-
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
 
 class CardsPage extends StatefulWidget {
@@ -21,10 +21,13 @@ class _CardsPageState extends State<CardsPage> {
   // bool _isLoading = false;
   String lang = 'ar';
     int? userId; // To store the userId
+ List<String> images = [];
+ 
  @override
   void initState() {
     super.initState();
-    _loadUserId(); // Load userId when the widget initializes
+    _loadUserId(); 
+   _fetchImages();
   }
 
   Future<void> _loadUserId() async {
@@ -79,6 +82,9 @@ class _CardsPageState extends State<CardsPage> {
           case 'وطني':
         userType = 11;
         break;
+          case 'الفريق الوطني':
+        userType = 14;
+        break;
       default:
         return;
     }
@@ -116,13 +122,16 @@ class _CardsPageState extends State<CardsPage> {
           case 'وطني':
         route = '/ActivitiesPage';
         break;
+        case 'الفريق الوطني':
+        route = '/national_team';
+        break;
     }
 
     // setState(() {
     //   _isLoading = false;
     // });
 
-    if (title == 'اخبار' || title == 'صحة المرأة' || title == 'التدريب' || title == 'الصحة  النفسية والاسرية' || title == 'كفاءة متميزة' || title == 'وطني' || userId != null) {
+    if (title == 'اخبار' || title == 'صحة المرأة' || title == 'التدريب' || title == 'الصحة  النفسية والاسرية' || title == 'الفريق الوطني' || title == 'كفاءة متميزة' || title == 'وطني' || userId != null) {
       Navigator.pushNamed(
         context,
         route,
@@ -189,6 +198,43 @@ Future<void> _logout() async {
 
 
 
+Future<void> _fetchImages() async {
+  try {
+    final response = await http.post(
+      Uri.parse('https://eyn.ur.gov.iq/api_staticcontent_user_admin.php'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'action': 'getad', // تحديد الإجراء المطلوب
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        images = List<String>.from(data['images']); // استخراج الصور من الاستجابة
+      });
+    } else {
+      print('Failed to load images. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +245,6 @@ Future<void> _logout() async {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Logo on the left
             const CircleAvatar(
               backgroundColor: Colors.white, // تعيين لون الخلفية إلى الأبيض
               radius: 20,
@@ -217,78 +262,52 @@ Future<void> _logout() async {
                 color: Colors.black,
               ),
             ),
-            // PopupMenuButton on the right
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: userId != null
-            ?  PopupMenuButton<int>(
-  icon: SvgPicture.asset(
-    'assets/images/menu.svg',
-    width: 24,
-    height: 24,
-    color: AppColors.secondaryColor,
-  ),
-  itemBuilder: (context) => [
-    const PopupMenuItem(
-      value: 1,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.logout, color: Colors.black),
-          SizedBox(width: 8),
-          Text('تسجيل خروج'),
-        ],
-      ),
-    ),
-    const PopupMenuItem(
-      value: 2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.info_outline, color: Colors.black),
-          SizedBox(width: 8),
-          Text('عن التطبيق'),
-        ],
-      ),
-    ),
-  ],
-  onSelected: (value) {
-    if (value == 1) {
-      _logout();
-    } else if (value == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) =>const Infoar()),
-      );
-    }
-  },
-) // Conditionally show the logout option
-                  // ? PopupMenuButton<int>(
-                  //     icon: SvgPicture.asset(
-                  //       'assets/images/menu.svg',
-                  //       width: 24,
-                  //       height: 24,
-                  //       color: AppColors.secondaryColor,
-                  //     ),
-                  //     itemBuilder: (context) => [
-                  //       const PopupMenuItem(
-                  //         value: 1,
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.center,
-                  //           children: [
-                  //             Icon(Icons.logout, color: Colors.black),
-                  //             SizedBox(width: 8),
-                  //             Text('تسجيل خروج'),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     ],
-                  //     onSelected: (value) {
-                  //       if (value == 1) {
-                  //         _logout();
-                  //       }
-                  //     },
-                  //   )
+                  ? PopupMenuButton<int>(
+                icon: SvgPicture.asset(
+                  'assets/images/menu.svg',
+                  width: 24,
+                  height: 24,
+                  color: AppColors.secondaryColor,
+                ),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text('تسجيل خروج'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text('عن التطبيق'),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (value) {
+                  if (value == 1) {
+                    _logout();
+                  } else if (value == 2) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const Infoar()),
+                    );
+                  }
+                },
+              )
                   : const SizedBox.shrink(), // Empty widget if userId is null
             ),
           ],
@@ -296,16 +315,14 @@ Future<void> _logout() async {
       ),
       body: Stack(
         children: [
-          // Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/backgroun.png'),
+                image: AssetImage('assets/images/zahaintro.png'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          // White background container
           Container(
             color: Colors.white.withOpacity(0.8),
           ),
@@ -331,67 +348,104 @@ Future<void> _logout() async {
                     fontSize: 16,
                   ),
                 ),
+                const SizedBox(height: 10),
+                // Add the slider here
+                CarouselSlider(
+  items: images.map((imagePath) { // الصور يتم جلبها من قائمة "images" التي تحتوي على البيانات من API
+    return Builder(
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            image: DecorationImage(
+              image: NetworkImage('https://eyn.ur.gov.iq/$imagePath'), // تحميل الصور ديناميكيًا من الإنترنت
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      },
+    );
+  }).toList(),
+  options: CarouselOptions(
+    height: MediaQuery.of(context).size.height * 0.3,
+    autoPlay: true,
+    enlargeCenterPage: true,
+    aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 9 : 4 / 3,
+    viewportFraction: MediaQuery.of(context).size.width > 600 ? 0.8 : 0.9,
+  ),
+),
+
+
                 const SizedBox(height: 20),
                 Expanded(
-                  child:  // إذا كان هناك تحميل، عرض مؤشر الدوران
-                     GridView.count(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 11,
-                          childAspectRatio: 1.5,
-                          children: [
-                            _buildCard(
-                                'الشكوى',
-                                'assets/images/complain_icon.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'استشارات قانونية',
-                                'assets/images/low_icon.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'كفاءة متميزة',
-                                'assets/images/efficiancycard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'صحة المرأة',
-                                'assets/images/healthcard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'الصحة النفسية والاسرية',
-                                'assets/images/selfcard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'التدريب',
-                                'assets/images/traincard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'وطني',
-                                'assets/images/adscard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'قصص النجاح',
-                                'assets/images/success_icon.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'اخبار',
-                                'assets/images/newscard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                            _buildCard(
-                                'مقترحاتي',
-                                'assets/images/compcard.svg',
-                                const Color(0xFFF9F9F9),
-                                const Color(0xFF36623F)),
-                          ],
-                        ),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 11,
+                    childAspectRatio: 1.5,
+                    children: [
+                      _buildCard(
+                          'الشكوى',
+                          'assets/images/complaint_2025.svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'استشارات قانونية',
+                          'assets/images/Legal_consultations_2025.svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'كفاءة متميزة',
+                          'assets/images/Outstanding efficiency_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'صحة المرأة',
+                          'assets/images/health_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'الصحة النفسية والاسرية',
+                          'assets/images/Mental_and_family_health_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'التدريب',
+                          'assets/images/training_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'وطني',
+                          'assets/images/patriotic_2025.svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'قصص النجاح',
+                          'assets/images/success story_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard(
+                          'اخبار',
+                          'assets/images/news_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)),
+                      _buildCard2(
+  'الفريق الوطني',
+  'assets/images/yasa.png',
+  const Color.fromARGB(255, 249, 249, 249),
+  const Color(0xFF36623F),
+),
+
+                      _buildCard(
+                          'مقترحاتي',
+                          'assets/images/Suggestions_2025..svg',
+                          const Color(0xFFF9F9F9),
+                          const Color(0xFF36623F)
+                          ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -399,13 +453,13 @@ Future<void> _logout() async {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-          lang: lang,
-
-        ),
+        currentIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+        lang: lang,
+      ),
     );
   }
+
 
   Widget _buildCard(
       String title, String svgAsset, Color cardColor, Color svgColor) {
@@ -440,4 +494,40 @@ Future<void> _logout() async {
       ),
     );
   }
+
+
+  Widget _buildCard2(
+    String title, String imageAsset, Color cardColor, Color textColor) {
+  return GestureDetector(
+    onTap: () => _checkUserAndNavigate(title),
+    child: Card(
+      color: cardColor.withOpacity(1),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              imageAsset,
+              height: 40,
+              width: 40,
+              fit: BoxFit.contain, // لضمان عرض الصورة بدون قص
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontSize: 13,
+                color: textColor, // لون النص
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+  
 }

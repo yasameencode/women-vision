@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:67746917873:android:6756f24bc15c1ef04da850",
+        "mobilesdk_app_id": "1:67746917873:android:bf70f991795986c74da850",
         "android_client_info": {
-          "package_name": "com.example.flutter_application_1"
+          "package_name": "iq.gov.ur.eyn.womenvision"
         }
       },
       "oauth_client": [],

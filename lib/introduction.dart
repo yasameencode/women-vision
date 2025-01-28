@@ -1,29 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';  // أضف هذه السطر
 import 'theme/appcolors.dart';
 
-// void main() {
-//   runApp(const MyApp());
-// }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Onboarding',
-//       theme: ThemeData(
-//         primarySwatch: Colors.purple,
-//       ),
-//       home: const SplashScreen(),
-//       debugShowCheckedModeBanner: false,
-//     );
-//   }
-// }
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -57,8 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
               decoration: const BoxDecoration(
                 color: Colors.transparent,
               ),
-              child: SvgPicture.asset(
-                'assets/images/wilogo.svg',
+              child: Image.asset(
+                'assets/images/wlogo.png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -73,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'رؤيتك نحو التمكين والتغيير',
+              'رؤيتك نحو التنمية والتغيير',
               style: GoogleFonts.arefRuqaa(
                 fontWeight: FontWeight.w400,
                 fontSize: 30,
@@ -192,7 +173,7 @@ class _OnboardingPageViewState extends State<OnboardingPageView> {
             itemCount: onboardingData.length,
             itemBuilder: (context, index) {
               return OnboardingScreen(
-                imagePath: 'assets/images/t1.png',
+                imagePath: 'assets/images/intrrrrooo.jpeg',
                 currentIndex: index,
                 totalPages: onboardingData.length,
               );
@@ -278,13 +259,13 @@ class _OnboardingPageViewState extends State<OnboardingPageView> {
               ),
             ),
           ),
-          if (_showSkipButton) 
+          if (_showSkipButton)
             Positioned(
               bottom: 10,
               right: 20,
               child: TextButton(
                 onPressed: () {
-                    Navigator.of(context, rootNavigator: true).pushReplacementNamed('/cards');
+                  Navigator.of(context, rootNavigator: true).pushReplacementNamed('/cards');
                 },
                 child: const Text(
                   'تخطي',
@@ -300,6 +281,7 @@ class _OnboardingPageViewState extends State<OnboardingPageView> {
     );
   }
 }
+
 
 
 

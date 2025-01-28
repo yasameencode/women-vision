@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class EssayPage extends StatelessWidget {
   final String title;
@@ -19,46 +22,45 @@ class EssayPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Top Container for Image and Forward Arrow Button
+          // Top Container for Image and Back Arrow Button
           Stack(
             children: [
-              // Image Container (350x200)
+              // Image Container
               Container(
                 width: double.infinity,
-                height: 375, // Fixed height
+                // height: 375,
+                height: MediaQuery.of(context).size.height * 0.4,
                 decoration: BoxDecoration(
-                  color: Colors.white, // Placeholder color
+                  color: Colors.white,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(12),
                     bottomRight: Radius.circular(12),
-                  ), // Rounded corners at the bottom
+                  ),
                   image: DecorationImage(
-                    image: NetworkImage(
-                        image), // استخدم NetworkImage لتحميل الصورة من الإنترنت
+                    image: NetworkImage(image),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-
-              // Positioned Arrow Forward Button
+              // Positioned Back Button
               Positioned(
                 top: 40,
                 right: 16,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.white, // لون الخلفية الأبيض
-                    shape: BoxShape.circle, // تحويل الـ Container إلى دائرة
+                    color: Colors.white,
+                    shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(
                       Icons.arrow_back,
-                      color: Colors.black, // لون الأيقونة الأسود
+                      color: Colors.black,
                       size: 28,
                     ),
                     onPressed: () {
-                      // العودة إلى الصفحة السابقة
                       Navigator.pop(context);
                     },
                   ),
@@ -66,110 +68,85 @@ class EssayPage extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16), // Spacing between image and content
+          const SizedBox(height: 16),
 
-          // Second Container for Calendar Button and Text
+          // Second Container for Date and Calendar Icon
           Align(
-            alignment:
-                Alignment.centerRight, // Aligns the container to the right
+            alignment: Alignment.centerRight,
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.white, // Background color
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.2),
                     spreadRadius: 3,
                     blurRadius: 5,
-                    offset: const Offset(0, 3), // Shadow position
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
-              // Wrapping with SizedBox to control size
-              child: SizedBox(
-                width: 130,
-                height: 26,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        date, // استبدال النص الثابت بـ date
-                        style: const TextStyle(
-                          fontSize:
-                              12, // Adjusted size to fit within 26px height
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    date,
+                    style: GoogleFonts.tajawal(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/images/agenda.svg',
-                        width: 24,
-                        height: 24,
-                      ),
-                      onPressed: () {
-                        // Handle button press
-                      },
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: SvgPicture.asset(
+                      'assets/images/agenda.svg',
+                      width: 24,
+                      height: 24,
                     ),
-                  ],
-                ),
+                    onPressed: () {
+                      // Handle button press
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-
           const SizedBox(height: 16),
 
-          // New Container for Additional Text
-
-          const SizedBox(height: 3), // Add spacing before the description
-
-          // Scrollable Container for the Description
+          // Scrollable Description Container
           Expanded(
             child: SingleChildScrollView(
-            child: Container(
-    width: double.infinity, // Full width with respect to its parent
-    padding: const EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    constraints: const BoxConstraints(
-      minHeight: 100, // Set a minimum height
-    ),
-    child: Text(
-      description,
-      style: GoogleFonts.tajawal(
-        fontWeight: FontWeight.w400,
-        fontSize: 14,
-        color: Colors.black,
-      ),
-    ),
-  ),
-
-              // child: Container(
-              
-              //   padding: const EdgeInsets.all(16.0),
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     borderRadius: BorderRadius.circular(12),
-                
-              //   ),
-              //   child: Text(
-              //     description,
-              //     style: GoogleFonts.tajawal(
-              //       fontWeight: FontWeight.w400,
-              //       fontSize: 14,
-              //       color: Colors.black,
-              //     ),
-              //   ),
-              // ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Html(
+                  data: description,
+                  onAnchorTap: (String? url, _, __) {
+                    if (url != null) {
+                      _launchUrl(url);
+                    }
+                  },
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint('Could not launch $url');
+    }
   }
 }

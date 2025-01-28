@@ -62,6 +62,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
           clipBehavior: Clip.none,
           children: [
             BottomNavigationBar(
+              backgroundColor: Colors.white,
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.home),
@@ -137,7 +138,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
                   widget.onItemTapped(1);
                 },
                 child: Image.asset(
-                  'assets/images/wlogo.png',
+                  'assets/images/wlogo2.png',
                   height: 150,
                   width: 150,
                 ),

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiNews {
-final String _baseUrl = "https://eyn.ur.gov.iq/api_staticcontent_user_admin.php"; 
+final String _baseUrl = "https://eyn.ur.gov.iq/api_user.php";
   final String _imageBaseUrl = "https://eyn.ur.gov.iq/"; 
 
 

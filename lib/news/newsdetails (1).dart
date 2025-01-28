@@ -360,6 +360,7 @@ Future<void> _logout() async {
       length: 3,
       initialIndex: 0, 
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
             Positioned(
@@ -370,6 +371,11 @@ Future<void> _logout() async {
                 height: screenHeight * 0.25,
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryColor,
+                  image: DecorationImage(
+
+                    image: AssetImage('assets/images/appbarnew.jpg'), // Replace with your image path
+                    fit: BoxFit.cover,
+                ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -634,8 +640,10 @@ Future<void> _logout() async {
                         //   ? AppColors.primaryColor // Primary color for selected tab
                         //  : Colors.white, // Transparent for unselected tabs
                             ),
-                            child: Center(child: Text(articlesTab ,
+                            child: Center(child: Text(
+                              articlesTab ,
                             style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
               color: _selectedTabIndex == 0
                   ? Colors.grey // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -663,6 +671,7 @@ Future<void> _logout() async {
           child: Text(
             jobsTab,
             style: TextStyle(
+              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
               color: _selectedTabIndex == 1
                   ? Colors.white // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -688,6 +697,7 @@ Future<void> _logout() async {
           child: Text(
             eventsTab,
             style: TextStyle(
+              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14, // Adjust font size for larger screens
               color: _selectedTabIndex == 2
                   ? Colors.white // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -815,21 +825,16 @@ Future<void> _logout() async {
                           textAlign: TextAlign.right,
                         ),
                         const SizedBox(height: 4),
-                      //    HtmlWidget(
-                      //   shortDescription, // عرض النصوص مع تنسيق HTML
-                      //   textStyle: GoogleFonts.tajawal(
-                      //     color: AppColors.textColor,
-                      //     fontSize: 12,
-                      //   ),
-                      // ),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
+
+
+
+
+
+
+
+
+
+
                       ],
                     ),
                   ),

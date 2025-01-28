@@ -3,17 +3,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:merge_voice_coplain/permission/permissions.dart';
 import 'package:merge_voice_coplain/theme/appcolors.dart';
 import 'dart:io';
 import '../api/api_complain_legul_sugges_success_form.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:just_audio/just_audio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
-import 'package:path/path.dart' as p;
-
+import 'package:image/image.dart' as img;
 
 class suggestions extends StatefulWidget {
   const suggestions({super.key});
@@ -23,70 +23,153 @@ class suggestions extends StatefulWidget {
 }
 
 class _suggestionsState extends State<suggestions> {
-  final AudioRecorder audioRecorder = AudioRecorder();
-  final AudioPlayer audioPlayer = AudioPlayer();
-  // final _formKey = GlobalKey<FormState>();
-  String? recordingPath;
-  bool isRecording = false;
-  bool isPlaying = false;
+  FlutterSoundRecorder? _audioRecorder;
+  FlutterSoundPlayer? _audioPlayer;
+  bool _isRecording = false;
+  bool _isPlaying = false;
+  String? _audioPath;
+  String _statusMessage = "لا يوجد تسجيل";
+  int _timeLeft = 60; // مدة العداد (60 ثانية)
+  Timer? _timer;
   int recordDuration = 0;
   Timer? timer;
-  String? selectedTitle;
+  String? selectedTitleId;
   String? selectedLocation;
   int? userType;
   String? userId;
   List<Map<String, dynamic>> titles = [];
-  String? selectedTitleId;
-  List<String> locations = [
-    'بغداد',
-    'البصرة',
-    'الانبار',
-    'بابل',
-    'الديوانية',
-    'ديالى',
-    'كربلاء',
-    'كركوك',
-    'المثنى',
-    'ميسان',
-    'النجف',
-    'نينوى',
-    'صلاح الدين',
-    'ذي قار',
-    'واسط'
-  ];
   List<File>? _files;
   final TextEditingController complaintContentController =
       TextEditingController();
   final TextEditingController whatsappController = TextEditingController();
+  
+  List<String> locations = [
+    'بغداد', 'البصرة', 'الانبار', 'بابل', 'الديوانية', 'ديالى',
+    'كربلاء', 'كركوك', 'المثنى', 'ميسان', 'النجف', 'نينوى',
+    'صلاح الدين', 'ذي قار', 'واسط'
+  ];
 
   @override
   void initState() {
     super.initState();
     _loadUserId();
+    _audioRecorder = FlutterSoundRecorder();
+    _audioPlayer = FlutterSoundPlayer();
+    initRecorderAndPlayer();
   }
+
+ 
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Get userType from arguments
-    final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (arguments != null) {
       setState(() {
         userType = arguments['userType'] as int?;
       });
-
       if (userType != null) {
         _loadTitles(userType!.toString());
       }
     }
   }
 
+ Future<void> initRecorderAndPlayer() async {
+    await Permission.microphone.request();
+    await _audioRecorder!.openRecorder();
+    await _audioPlayer!.openPlayer();
+  }
 
-void _checkPermissions() async {
-  PermissionManager permissionManager = PermissionManager();
-  await permissionManager.requestAllPermissions(context);
+Future<void> startRecording() async {
+  // الحصول على المسار المناسب لحفظ الملفات
+  final directory = await getApplicationDocumentsDirectory();
+  _audioPath = '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac';
+
+  // بدء التسجيل
+  await _audioRecorder!.startRecorder(
+    toFile: _audioPath,
+  );
+  setState(() {
+    _isRecording = true;
+    _statusMessage = "جاري التسجيل...";
+    _timeLeft = 60; // إعادة ضبط العداد
+  });
+
+  // بدء العداد
+  _startTimer();
+}
+
+  Future<void> stopRecording() async {
+    await _audioRecorder!.stopRecorder();
+    setState(() {
+      _isRecording = false;
+      _statusMessage = "تم إيقاف التسجيل.";
+      _timer?.cancel();
+    });
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_timeLeft > 0) {
+          _timeLeft--;
+        } else {
+          _timer?.cancel();
+          stopRecording(); // إيقاف التسجيل تلقائيًا بعد انتهاء الدقيقة
+        }
+      });
+    });
+  }
+
+Future<void> playAudio() async {
+  if (_audioPath != null) {
+    await _audioPlayer!.startPlayer(
+      fromURI: _audioPath, // تشغيل الملف من المسار الكامل
+      whenFinished: () {
+        setState(() {
+          _isPlaying = false;
+          _statusMessage = "انتهى التشغيل.";
+        });
+      },
+    );
+    setState(() {
+      _isPlaying = true;
+      _statusMessage = "جاري التشغيل...";
+    });
+  } else {
+    setState(() {
+      _statusMessage = "لا يوجد تسجيل لتشغيله.";
+    });
+  }
+}
+
+  Future<void> stopAudio() async {
+    await _audioPlayer!.stopPlayer();
+    setState(() {
+      _isPlaying = false;
+      _statusMessage = "تم إيقاف التشغيل.";
+    });
+  }
+
+Future<void> deleteAudio() async {
+  if (_audioPath != null) {
+    final file = File(_audioPath!);
+    if (await file.exists()) {
+      await file.delete(); // حذف الملف من الجهاز
+    }
+    _audioPath = null; // إعادة تعيين المسار إلى null
+    setState(() {
+      _statusMessage = "تم حذف التسجيل.";
+    });
+  }
+}
+
+@override
+void dispose() {
+  _audioRecorder?.closeRecorder();
+  _audioPlayer?.closePlayer();
+  _timer?.cancel();
+  super.dispose();
 }
 
 
@@ -94,6 +177,7 @@ void _checkPermissions() async {
 
 
 
+  // Load user ID from SharedPreferences
   Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -101,6 +185,7 @@ void _checkPermissions() async {
     });
   }
 
+  // Load titles based on user type
   Future<void> _loadTitles(String userType) async {
     try {
       final api = Apicomplain();
@@ -113,64 +198,123 @@ void _checkPermissions() async {
     }
   }
 
-  Future<void> _submitComplaint() async {
-    // تحقق من صحة البيانات
-    if (selectedTitleId == null ||
-        selectedLocation == null ||
-        complaintContentController.text.isEmpty ||
-        whatsappController.text.isEmpty ||
-        userType == null ||
-        userId == null ||
-        !RegExp(r'^[0-9]{1,11}$').hasMatch(whatsappController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى ملء جميع الحقول بشكل صحيح')),
-      );
-      return;
-    }
-
-    print('UserType: $userType');
-    try {
-      final api = Apicomplain();
-
-      // إرسال الشكوى
-      final response = await api.submitComplaint(
-        titleId: selectedTitleId!,
-        location: selectedLocation!,
-        content: complaintContentController.text,
-        whatsapp: whatsappController.text,
-        files: _files,
-        audioFile: recordingPath != null ? File(recordingPath!) : null,
-        userType: userType!,
-        userId: userId!,
-      );
-
-      // التحقق من حالة النجاح في الاستجابة
-      if (response['success_complaint_count'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم تقديم المقترح بنجاح')),
-        );
-        Navigator.of(context).pop();
-      } else if (response['success_complaint_count'] == false) {
-        // عرض رسالة الخطأ المحددة في الاستجابة
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'فشل تقديم المقترح: ${response['error_complaint_count'] ?? 'غير محدد'}')),
-        );
-      }
-    } catch (e) {
-      // عرض رسالة خطأ عامة في حالة حدوث استثناء
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تقديم المقترح: ${e.toString()}')),
-      );
-    }
+  // Submit complaint function
+Future<void> _submitComplaint() async {
+  // تحقق من صحة الإدخال
+  if (selectedTitleId == null ||
+      selectedLocation == null ||
+      complaintContentController.text.isEmpty ||
+      whatsappController.text.isEmpty ||
+      userType == null ||
+      userId == null ||
+      !RegExp(r'^[0-9]{11}$').hasMatch(whatsappController.text)) {
+    print('الحقل غير مكتمل أو الرقم غير صحيح'); // طباعة للتحقق من المدخلات
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('يرجى ملء جميع الحقول بشكل صحيح')),
+    );
+    return;
   }
 
+  try {
+    print('بدأ إرسال الشكوى'); // طباعة لفحص بداية عملية الإرسال
+
+    // معلومات الشكوى التي يتم إرسالها
+    print('تفاصيل الشكوى:');
+    print('titleId: $selectedTitleId');
+    print('location: $selectedLocation');
+    print('content: ${complaintContentController.text}');
+    print('whatsapp: ${whatsappController.text}');
+    print('userType: $userType');
+    print('userId: $userId');
+
+    // if (_audioPath != null) {
+    //   print('مسار ملف الصوت: $_audioPath');
+    // } else {
+    //   print('لا يوجد ملف صوتي');
+    // }
+
+    // استدعاء API لتقديم الشكوى
+    final api = Apicomplain();
+    final response = await api.submitComplaint(
+      titleId: selectedTitleId!,
+      location: selectedLocation!,
+      content: complaintContentController.text,
+      whatsapp: whatsappController.text,
+      files: _files,
+      audioFile: _audioPath != null ? File(_audioPath!) : null,
+      userType: userType!,
+      userId: userId!,
+    );
+
+    // التحقق من حالة النجاح
+    if (response['success_complaint_count'] == true) {
+      print('تم إرسال المقترح بنجاح'); // طباعة في حالة النجاح
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تقديم المقترح بنجاح')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      print('فشل في إرسال المقترح'); // طباعة في حالة الفشل
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'فشل تقديم المقترح: ${response['error_complaint_count'] ?? 'غير محدد'}')),
+      );
+    }
+  } catch (e) {
+    print('حدث خطأ أثناء تقديم الشكوى: $e'); // طباعة عند حدوث استثناء
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('حدث خطأ أثناء تقديم المقترح: ${e.toString()}')),
+    );
+  }
+}
+
+
+  // Logout function
+Future<void> _logout() async {
+  try {
+    // الحصول على التوكن من SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final String? accessToken = prefs.getString('accessToken');
+
+    if (accessToken != null) {
+      // إرسال طلب الـ Logout
+      final url = Uri.parse('https://ur.gov.iq/api/client/user/logout');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken', // إرسال التوكن في الهيدر
+        },
+      );
+
+      // التحقق من حالة الرد وطباعة النتيجة
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print('Logout successful: $responseData');
+      } else {
+        print('Logout failed. Status: ${response.statusCode}, Response: ${response.body}');
+      }
+    } else {
+      print('No Access Token found.');
+    }
+    // حذف التوكن والبيانات الأخرى
+    await prefs.remove('accessToken');
+    await prefs.remove('user_id');
+    // إعادة التوجيه إلى صفحة تسجيل الخروج
+    Navigator.pushReplacementNamed(context, '/logafterlogout');
+  } catch (e) {
+    print('Error occurred during logout: $e');
+  }
+}
+  // Build main UI
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
@@ -181,12 +325,15 @@ void _checkPermissions() async {
               height: screenHeight * 0.2,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF1C1C1C),
-                    Color(0xFF1C1C1C),
-                  ],
+                  colors: [Color(0xFF1C1C1C), Color(0xFF1C1C1C)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+
+                ),
+                image: DecorationImage(
+
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
                 ),
               ),
               child: SafeArea(
@@ -195,60 +342,61 @@ void _checkPermissions() async {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: screenWidth * 0.06,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios_rounded,
-                            color: Colors.black,
-                            size: 18,
+                      // Adding Hero for CircleAvatar to enable smooth transition
+                      Hero(
+                        tag: 'avatar-hero',  // Unique tag for Hero animation
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: screenWidth * 0.06,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back_ios_rounded,
+                              color: Colors.black,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
                           ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
                         ),
                       ),
                       Text(
-                        'مشاركة مقترح جديد',
+                        'مشاركة مقترح جديدة',
                         style: GoogleFonts.tajawal(
                           fontWeight: FontWeight.bold,
                           fontSize: screenWidth * 0.05,
                           color: AppColors.backgroundColor,
                         ),
                       ),
-
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/images/menu.svg',
-                          color: AppColors.backgroundColor,
-                          width: 24,
-                          height: 24,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: PopupMenuButton<int>(
+                          icon: SvgPicture.asset(
+                            'assets/images/menu.svg',
+                            width: 24,
+                            height: 24,
+                            color: const Color.fromARGB(255, 255, 255, 255),
+                          ),
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 1,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.logout, color: Colors.black),
+                                  SizedBox(width: 8),
+                                  Text('تسجيل خروج'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value == 1) {
+                              _logout();
+                            }
+                          },
                         ),
-                        onPressed: () {},
                       ),
-                      // Text(
-                      //   'مشاركة شكوى جديدة',
-                      //   style: GoogleFonts.tajawal(
-                      //     fontWeight: FontWeight.bold,
-                      //     fontSize: screenWidth * 0.05,
-                      //     color: AppColors.backgroundColor,
-                      //   ),
-                      // ),
-                      // CircleAvatar(
-                      //   backgroundColor: Colors.white,
-                      //   radius: screenWidth * 0.06,
-                      //   child: IconButton(
-                      //     icon: const Icon(
-                      //       Icons.arrow_back_ios_rounded,
-                      //       color: Colors.black,
-                      //       size: 18,
-                      //     ),
-                      //     onPressed: () {
-                      //       Navigator.of(context).pop();
-                      //     },
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
@@ -266,8 +414,9 @@ void _checkPermissions() async {
                     vertical: screenHeight * 0.02,
                   ),
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    color: AppColors.backgroundColor,
+
                     boxShadow: const [
                       BoxShadow(
                         color: AppColors.secondaryColor,
@@ -281,9 +430,7 @@ void _checkPermissions() async {
                     children: [
                       _buildDropdownField(
                         label: 'عنوان المحتوى',
-                        items: titles
-                            .map((item) => item['name'] as String)
-                            .toList(),
+                        items: titles.map((item) => item['name'] as String).toList(),
                         selectedValue: selectedTitleId,
                         onChanged: (value) {
                           setState(() {
@@ -314,7 +461,6 @@ void _checkPermissions() async {
                       SizedBox(height: screenHeight * 0.01),
                       _buildInputField(
                         label: 'رقم واتساب للتواصل',
-                        // placeholder: 'الرقم',
                         leadingIcon: 'assets/images/chat.svg',
                         controller: whatsappController,
                         validator: (value) {
@@ -333,7 +479,7 @@ void _checkPermissions() async {
                       SizedBox(height: screenHeight * 0.02),
                       _buildAudioRecorderUI(),
                       SizedBox(height: screenHeight * 0.02),
-                      _buildSubmitButton(context), // Add submit button
+                      _buildSubmitButton(context),
                     ],
                   ),
                 ),
@@ -412,156 +558,85 @@ void _checkPermissions() async {
   }
 
 //ملف الصوت
-
-  Widget _buildAudioRecorderUI() {
-    return Column(
-      children: [
-        if (recordingPath != null)
-          const Text(
-            "التسجيل جاهز للتشغيل",
-            style: TextStyle(fontSize: 18, color: Colors.green),
-          ),
-        if (recordingPath == null)
-          const Text(
-            "لايوجد تسجيل",
-            style: TextStyle(fontSize: 18, color: Colors.red),
-          ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _recordingButton(),
-            const SizedBox(width: 20),
-            _playbackButton(),
-            const SizedBox(width: 20),
-            _deleteRecordingButton(),
-          ],
+ 
+Widget _buildAudioRecorderUI() {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      // الحالة النصية
+      Text(
+        _statusMessage,
+        style: const TextStyle(
+          color: Color(0xFF36623F), // اللون الأخضر
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(height: 20),
-        if (isRecording) _buildRecordingDuration(),
-      ],
-    );
-  }
-
-  Widget _buildRecordingDuration() {
-    final minutes = (recordDuration / 60).floor().toString().padLeft(2, '0');
-    final seconds = (recordDuration % 60).toString().padLeft(2, '0');
-    return Text(
-      "$minutes:$seconds",
-      style: const TextStyle(fontSize: 30, color: Colors.blue),
-    );
-  }
-
-  Widget _recordingButton() {
-    return FloatingActionButton(
-      onPressed: () async {
-        if (isRecording) {
-          String? filepath = await audioRecorder.stop();
-          timer?.cancel();
-          if (filepath != null) {
-            setState(() {
-              isRecording = false;
-              recordingPath = filepath;
-            });
-          }
-        } else {
-          if (await audioRecorder.hasPermission()) {
-            final Directory directory =
-                await getApplicationDocumentsDirectory();
-            final String filepath = p.join(directory.path, "recording.wav");
-            await audioRecorder.start(const RecordConfig(), path: filepath);
-
-            setState(() {
-              isRecording = true;
-              recordingPath = null;
-              recordDuration = 0;
-            });
-
-            timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-              setState(() {
-                recordDuration++;
-              });
-              if (recordDuration >= 60) {
-                timer?.cancel();
-                _stopRecording();
-              }
-            });
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("تحتاج إلى منح إذن التسجيل")),
-            );
-          }
-        }
-      },
-      child: Icon(
-        isRecording ? Icons.stop : Icons.mic,
       ),
-    );
-  }
+      const SizedBox(height: 20),
+      // الوقت المتبقي أثناء التسجيل
+      Text(
+        _isRecording ? "الوقت المتبقي: $_timeLeft ثانية" : "",
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+        ),
+      ),
+      const SizedBox(height: 20),
+      // الأزرار
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // زر الحذف (يسار)
+          _buildButton(
+            icon: Icons.delete,
+            onPressed: (_audioPath != null) ? deleteAudio : null, // تفعيل فقط عند وجود تسجيل
+            color: (_audioPath != null) ? const Color(0xFF36623F) : Colors.grey,
+          ),
+          const SizedBox(width: 40), // مساحة بين الحذف والميكروفون
+          // زر التسجيل (في المنتصف)
+          _buildButton(
+            icon: _isRecording ? Icons.stop : Icons.mic,
+            onPressed: _isRecording ? stopRecording : startRecording,
+            color: const Color(0xFF36623F),
+          ),
+          const SizedBox(width: 40), // مساحة بين الميكروفون والتشغيل
+          // زر التشغيل (يمين)
+          _buildButton(
+            icon: (_isPlaying) ? Icons.stop : Icons.play_arrow,
+            onPressed: (_audioPath != null)
+                ? (_isPlaying ? stopAudio : playAudio) // تفعيل فقط عند وجود تسجيل
+                : null,
+            color: (_audioPath != null) ? const Color(0xFF36623F) : Colors.grey,
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
-  Widget _playbackButton() {
-    return FloatingActionButton(
-      onPressed: recordingPath == null
-          ? null
-          : () async {
-              if (isPlaying) {
-                await audioPlayer.stop();
-                setState(() {
-                  isPlaying = false;
-                });
-              } else {
-                await audioPlayer.setFilePath(recordingPath!);
-                audioPlayer.play();
-                setState(() {
-                  isPlaying = true;
-                });
-                audioPlayer.playerStateStream.listen((state) {
-                  if (state.playing == false) {
-                    setState(() {
-                      isPlaying = false;
-                    });
-                  }
-                });
-              }
-            },
-      backgroundColor: recordingPath == null ? Colors.grey : Colors.blue,
-      child: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-    );
-  }
+ Widget _buildButton({
+  required IconData icon,
+  required VoidCallback? onPressed, // اجعل `onPressed` قابلًا لأن يكون فارغًا
+  required Color color,
+}) {
+  return GestureDetector(
+    onTap: onPressed, // لا تفعل شيء إذا كان `onPressed` null
+    child: Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: onPressed != null ? Colors.grey.shade300 : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Icon(
+        icon,
+        color: onPressed != null ? color : Colors.grey, // تغيير اللون عند التعطيل
+        size: 30,
+      ),
+    ),
+  );
+}
 
-  Widget _deleteRecordingButton() {
-    return FloatingActionButton(
-      onPressed: recordingPath == null
-          ? null
-          : () {
-              setState(() {
-                recordingPath = null;
-              });
-            },
-      backgroundColor: recordingPath == null ? Colors.grey : Colors.red,
-      child: const Icon(Icons.delete),
-    );
-  }
-
-  void _stopRecording() async {
-    if (isRecording) {
-      String? filepath = await audioRecorder.stop();
-      timer?.cancel();
-      if (filepath != null) {
-        setState(() {
-          isRecording = false;
-          recordingPath = filepath;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    audioPlayer.dispose();
-    timer?.cancel();
-    super.dispose();
-  }
 // ملف الصوت
 
   Widget _buildTextArea({
@@ -658,7 +733,7 @@ void _checkPermissions() async {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('تأكيد الإرسال'),
-          content: const Text('هل أنت متأكد من تقديم الشكوى؟'),
+          content: const Text('هل أنت متأكد من تقديم المقترح'),
           actions: <Widget>[
             Row(
               mainAxisAlignment:
@@ -772,9 +847,8 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
 
 
 
-  
 
-  void _pickImages() async {
+void _pickImages() async {
   try {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
@@ -785,7 +859,9 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
       if (result.files.length <= 5) {
         final allowedExtensions = ['jpg', 'jpeg', 'png']; // أنواع الصور المسموح بها
 
-        final files = result.files.map((file) {
+        final List<File> files = [];
+
+        for (var file in result.files) {
           final fileSizeKB = file.size / 1024; // تحويل الحجم إلى كيلوبايت
           final extension = file.extension?.toLowerCase(); // الحصول على الامتداد
 
@@ -794,20 +870,36 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('يجب أن تكون الصورة من نوع JPG أو PNG')),
             );
-            return null; // تجاهل الملفات التي لا تتطابق مع النوع المسموح به
+            return; // إيقاف العملية إذا كان هناك نوع غير مدعوم
           }
 
-          // التحقق من حجم الصورة الواحدة
-          if (fileSizeKB > 150) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('كل صورة يجب أن تكون أقل من 150 كيلوبايت')),
-            );
-            return null; // تجاهل الملفات التي تتجاوز الحد
+          File processedFile = File(file.path!);
+
+          // ضغط الصورة إذا كان الحجم أكبر من 500 كيلوبايت
+          if (fileSizeKB > 500) {
+            final imageBytes = processedFile.readAsBytesSync();
+            final decodedImage = img.decodeImage(imageBytes);
+
+            if (decodedImage != null) {
+  // ضغط الصورة بجودة 85%
+  final compressedImage = img.encodeJpg(decodedImage, quality: 85);
+  processedFile.writeAsBytesSync(compressedImage); // تعديل الملف مباشرةً
+}
+
+            // التحقق من الحجم بعد الضغط
+            final newFileSizeKB = processedFile.lengthSync() / 1024;
+            if (newFileSizeKB > 500) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('الصورة "${file.name}" حجمها لا يزال أكبر من 500 كيلوبايت بعد الضغط')),
+              );
+              return; // إيقاف العملية إذا لم تنجح عملية الضغط
+            }
           }
 
-          return File(file.path!);
-        }).whereType<File>().toList(); // التأكد من أن الصور المقبولة فقط هي التي سيتم معالجتها
+          files.add(processedFile);
+        }
 
+        // تحديث الحالة فقط إذا كانت جميع الصور مقبولة
         setState(() {
           _files = files;
         });
@@ -828,7 +920,7 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
 
 
 
-  void _pickPdf() async {
+void _pickPdf() async {
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -838,17 +930,16 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
     if (result != null && result.files.isNotEmpty) {
       final file = File(result.files.single.path!);
 
-      // Check the size of the selected file
-      final fileSizeMB =
-          await file.length() / (1024 * 1024); // Convert bytes to MB
+      // التحقق من حجم الملف
+      final fileSizeMB = await file.length() / (1024 * 1024); // تحويل الحجم إلى ميجابايت
       if (fileSizeMB > 2) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('الملف يجب أن يكون أقل من 2 ميجابايت')),
+          const SnackBar(content: Text('الملف يجب أن يكون أقل من 2 ميجابايت')),
         );
-        return; 
+        return; // إيقاف العملية إذا تجاوز الحجم
       }
 
+      // إذا كان الحجم أقل من 2 ميجابايت، تابع العملية
       setState(() {
         _files = [file];
       });
@@ -860,30 +951,7 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
 }
 
 
-  // void _pickImagesFromCamera() async {
-  //   final ImagePicker picker = ImagePicker();
 
-  //   if (_cameraUsageCount < 5) {
-  //     try {
-  //       final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-  //       if (pickedFile != null) {
-  //         final file = File(pickedFile.path);
-  //         setState(() {
-  //           _files = _files != null ? [..._files!, file] : [file];
-  //           _cameraUsageCount++;
-  //         });
-  //         widget.onFilesSelected(_files!);
-  //       }
-  //     } catch (e) {
-  //       print('Error picking image from camera: $e');
-  //     }
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('يمكنك استخدام الكاميرا 5 مرات فقط')),
-  //     );
-  //   }
-  // }
 
 
 
@@ -912,10 +980,10 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'إضافة مرفقات',
+                    '(يجب اضافةاما صور او ملف ولايمكن الدمج بينهما)',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 12,
                       color: Color.fromARGB(255, 198, 198, 197),
                     ),
                   ),

@@ -327,10 +327,12 @@ Future<void> _logout() async {
 
 
   @override
+
   Widget build(BuildContext context) {
-      final double screenHeight = MediaQuery.of(context).size.height;
-    // final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           // AppBar with gradient and custom content
@@ -338,84 +340,78 @@ Future<void> _logout() async {
             top: 0,
             left: 0,
             right: 0,
-            child: PreferredSize(
-              preferredSize: const Size.fromHeight(180), // Adjust AppBar height
-              child: Container(
-                  height: screenHeight * 0.20,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF1C1C1C),
-                      Color(0xFF1C1C1C),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+            child: Container(
+              height: screenHeight * 0.25, // Adjust AppBar height
+              decoration: const BoxDecoration(
+          
+                image: DecorationImage(
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
                 ),
-                child: AppBar(
-                  automaticallyImplyLeading: false,
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 18.5,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios_rounded,
-                            color: Colors.black,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ),
-                      Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: PopupMenuButton<int>(
-                icon: SvgPicture.asset(
-                  'assets/images/menu.svg',
-                  width: 24,
-                  height: 24,
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                ),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 1,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.logout, color: Colors.black),
-                        SizedBox(width: 8),
-                        Text('تسجيل خروج'),
-                      ],
-                    ),
-                  ),
-                ],
-                onSelected: (value) {
-                  if (value == 1) {
-                    _logout();
-                  }
-                },
               ),
-            ),
-                    ],
-                  ),
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
+              child: AppBar(
+                automaticallyImplyLeading: false,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 18.5,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_rounded,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: PopupMenuButton<int>(
+                        icon: SvgPicture.asset(
+                          'assets/images/menu.svg',
+                          width: 24,
+                          height: 24,
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 1,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.logout, color: Colors.black),
+                                SizedBox(width: 8),
+                                Text('تسجيل خروج'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          if (value == 1) {
+                            _logout();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
               ),
             ),
           ),
           // Positioned container above the AppBar
           Positioned(
-            top: 110,
+            top: 180,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
                 width: 327,
-                height: 100,
+                height: 90,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: Colors.white,
@@ -446,107 +442,108 @@ Future<void> _logout() async {
             ),
           ),
           // Middle content
-          Positioned.fill(
-            top: 240,
-            child: Column(
-              children: [
-                Container(
-                  width: 351,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD3D3D3), // Gray color
-                    borderRadius: BorderRadius.circular(12),
+Positioned.fill(
+  top: 300,
+  child: Padding(
+    padding: const EdgeInsets.only(bottom: 80.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 351,
+          height: 50,
+          decoration: BoxDecoration(
+            color: const Color(0xFFD3D3D3),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search, color: Colors.grey[600]),
+              Expanded(
+                child: TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'بحث',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Icon(Icons.search, color: Colors.grey[600]), // زر البحث الأيقوني
-                      Expanded(
-                        child: TextField(
-                          controller: searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'بحث',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                          ),
-                          style: GoogleFonts.tajawal(fontSize: 16),
+                  style: GoogleFonts.tajawal(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'الاستشارات السابقة',
+          style: GoogleFonts.tajawal(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: const Color(0xec000000),
+          ),
+        ),
+        Expanded(
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filteredTitles.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/images/File searching-rafiki 1.svg',
+                          width: 100,
+                          height: 100,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 30),
-                Text(
-                  'الاستشارات السابقة',
-                  style: GoogleFonts.tajawal(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: const Color(0xec000000),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                Expanded(
-                  child: isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(), // عرض دائرة التحميل أثناء جلب البيانات
-                        )
-                      : filteredTitles.isEmpty
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(
-  'assets/images/File searching-rafiki 1.svg', // المسار الصحيح لملف SVG
-  width: 100,
-  height: 100,
-),
-                                const SizedBox(height: 20), // إضافة مسافة بين الصورة والنص
-                                Text(
-                                  'لا توجد استشارات لعرضها حاليًا',
+                        const SizedBox(height: 20),
+                        Text(
+                          'لا توجد استشارات لعرضها حاليًا',
+                          style: GoogleFonts.tajawal(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: const Color(0xec000000),
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: filteredTitles.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          title: Row(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/images/agenda.svg',
+                                width: 24,
+                                height: 24,
+                                color: AppColors.buttonColor,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  filteredTitles[index]['name'] ?? 'لايوجد عنوان',
                                   style: GoogleFonts.tajawal(
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: const Color(0xec000000),
                                   ),
+                                  textAlign: TextAlign.right,
                                 ),
-                              ],
-                            )
-                          : ListView.builder(
-                              itemCount: filteredTitles.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                  title: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/images/agenda.svg',
-                                        width: 24,
-                                        height: 24,
-                                        color: AppColors.buttonColor,
-                                      ),
-                                      const SizedBox(width: 16), // مسافة بين الأيقونة والنص
-                                      Expanded(
-                                        child: Text(
-                                          filteredTitles[index]['name'] ?? 'لايوجد عنوان',
-                                          style: GoogleFonts.tajawal(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
-                                            color: const Color(0xec000000),
-                                          ),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    _showSubmissionDialog(index);
-                                  },
-                                );
-                              },
-                            ),
-                ),
-              ],
-            ),
-          ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            _showSubmissionDialog(index);
+                          },
+                        );
+                      },
+                    ),
+        ),
+      ],
+    ),
+  ),
+),
           Positioned(
             bottom: 20,
             left: 20,
@@ -575,11 +572,11 @@ Future<void> _logout() async {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-          lang: lang,
-
-        ),
+        currentIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+        lang: lang,
+      ),
     );
   }
+
 }

@@ -8,6 +8,7 @@ import '../api/api_psychological_consultation.dart';
 import 'familycare.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_html/flutter_html.dart';
 
 class SelffamilyPage extends StatefulWidget {
   const SelffamilyPage({super.key});
@@ -310,6 +311,7 @@ Future<void> _logout() async {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
             // AppBar with gradient and custom content
@@ -321,6 +323,11 @@ Future<void> _logout() async {
                 height: screenHeight * 0.20,
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryColor,
+                  image: DecorationImage(
+
+                    image: AssetImage('assets/images/appbarnew.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -415,14 +422,15 @@ Future<void> _logout() async {
               ),
             ),
 
+
             Positioned(
               top: 130,
               left: 0,
               right: 0,
               child: Center(
                 child: Container(
-                  width: 335,
-                  height: 110,
+                  width: 327,
+                  height: 90,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: Colors.white,
@@ -521,7 +529,15 @@ Future<void> _logout() async {
                                 color: const Color(0xFF6B7280),
                               ),
                             ),
-                            child: Center(child: Text(womenTab)),
+                            child: Center(child: Text(womenTab,
+                              style: TextStyle(
+                                fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14,
+                                color: _selectedTabIndex == 0
+                                    ? Colors.grey // White text for selected tab
+                                    : Colors.grey, // Black text for unselected tabs
+                              ),
+
+                            )),
                           ),
                         ),
                         Tab(
@@ -537,6 +553,7 @@ Future<void> _logout() async {
                             ),
                             child: Center(child: Text(childTab, 
                            style: TextStyle(
+                             fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14,
               color: _selectedTabIndex == 0
                   ? Colors.grey // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -635,12 +652,14 @@ Future<void> _logout() async {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
+                        Html(
+                          data: shortDescription,
+                          style: {
+                            "body": Style(
+                              fontSize: FontSize(12.0),
+                              color: AppColors.textColor,
+                            ),
+                          },
                         ),
                         const SizedBox(height: 4),
                         Row(

@@ -8,12 +8,12 @@ import 'dart:io';
 import '../api/api_complain_legul_sugges_success_form.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
-import 'package:path/path.dart' as p;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
 
 class ComplainPage extends StatefulWidget {
   const ComplainPage({super.key});
@@ -23,11 +23,14 @@ class ComplainPage extends StatefulWidget {
 }
 
 class _ComplainPageState extends State<ComplainPage> {
-  final AudioRecorder audioRecorder = AudioRecorder();
-  final AudioPlayer audioPlayer = AudioPlayer();
-  String? recordingPath;
-  bool isRecording = false;
-  bool isPlaying = false;
+  FlutterSoundRecorder? _audioRecorder;
+  FlutterSoundPlayer? _audioPlayer;
+  bool _isRecording = false;
+  bool _isPlaying = false;
+  String? _audioPath;
+  String _statusMessage = "لا يوجد تسجيل";
+  int _timeLeft = 60; // مدة العداد (60 ثانية)
+  Timer? _timer;
   int recordDuration = 0;
   Timer? timer;
   String? selectedTitleId;
@@ -50,7 +53,12 @@ class _ComplainPageState extends State<ComplainPage> {
   void initState() {
     super.initState();
     _loadUserId();
+    _audioRecorder = FlutterSoundRecorder();
+    _audioPlayer = FlutterSoundPlayer();
+    initRecorderAndPlayer();
   }
+
+ 
 
   @override
   void didChangeDependencies() {
@@ -65,6 +73,109 @@ class _ComplainPageState extends State<ComplainPage> {
       }
     }
   }
+
+ Future<void> initRecorderAndPlayer() async {
+    await Permission.microphone.request();
+    await _audioRecorder!.openRecorder();
+    await _audioPlayer!.openPlayer();
+  }
+
+Future<void> startRecording() async {
+  // الحصول على المسار المناسب لحفظ الملفات
+  final directory = await getApplicationDocumentsDirectory();
+  _audioPath = '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.aac';
+
+  // بدء التسجيل
+  await _audioRecorder!.startRecorder(
+    toFile: _audioPath,
+  );
+  setState(() {
+    _isRecording = true;
+    _statusMessage = "جاري التسجيل...";
+    _timeLeft = 60; // إعادة ضبط العداد
+  });
+
+  // بدء العداد
+  _startTimer();
+}
+
+  Future<void> stopRecording() async {
+    await _audioRecorder!.stopRecorder();
+    setState(() {
+      _isRecording = false;
+      _statusMessage = "تم إيقاف التسجيل.";
+      _timer?.cancel();
+    });
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_timeLeft > 0) {
+          _timeLeft--;
+        } else {
+          _timer?.cancel();
+          stopRecording(); // إيقاف التسجيل تلقائيًا بعد انتهاء الدقيقة
+        }
+      });
+    });
+  }
+
+Future<void> playAudio() async {
+  if (_audioPath != null) {
+    await _audioPlayer!.startPlayer(
+      fromURI: _audioPath, // تشغيل الملف من المسار الكامل
+      whenFinished: () {
+        setState(() {
+          _isPlaying = false;
+          _statusMessage = "انتهى التشغيل.";
+        });
+      },
+    );
+    setState(() {
+      _isPlaying = true;
+      _statusMessage = "جاري التشغيل...";
+    });
+  } else {
+    setState(() {
+      _statusMessage = "لا يوجد تسجيل لتشغيله.";
+    });
+  }
+}
+
+  Future<void> stopAudio() async {
+    await _audioPlayer!.stopPlayer();
+    setState(() {
+      _isPlaying = false;
+      _statusMessage = "تم إيقاف التشغيل.";
+    });
+  }
+
+Future<void> deleteAudio() async {
+  if (_audioPath != null) {
+    final file = File(_audioPath!);
+    if (await file.exists()) {
+      await file.delete(); // حذف الملف من الجهاز
+    }
+    _audioPath = null; // إعادة تعيين المسار إلى null
+    setState(() {
+      _statusMessage = "تم حذف التسجيل.";
+    });
+  }
+}
+
+@override
+void dispose() {
+  _audioRecorder?.closeRecorder();
+  _audioPlayer?.closePlayer();
+  _timer?.cancel();
+  super.dispose();
+}
+
+
+
+
+
 
   // Load user ID from SharedPreferences
   Future<void> _loadUserId() async {
@@ -116,11 +227,11 @@ Future<void> _submitComplaint() async {
     print('userType: $userType');
     print('userId: $userId');
 
-    if (recordingPath != null) {
-      print('مسار ملف الصوت: $recordingPath');
-    } else {
-      print('لا يوجد ملف صوتي');
-    }
+    // if (_audioPath != null) {
+    //   print('مسار ملف الصوت: $_audioPath');
+    // } else {
+    //   print('لا يوجد ملف صوتي');
+    // }
 
     // استدعاء API لتقديم الشكوى
     final api = Apicomplain();
@@ -130,7 +241,7 @@ Future<void> _submitComplaint() async {
       content: complaintContentController.text,
       whatsapp: whatsappController.text,
       files: _files,
-      audioFile: recordingPath != null ? File(recordingPath!) : null,
+      audioFile: _audioPath != null ? File(_audioPath!) : null,
       userType: userType!,
       userId: userId!,
     );
@@ -203,6 +314,7 @@ Future<void> _logout() async {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Positioned(
@@ -216,6 +328,12 @@ Future<void> _logout() async {
                   colors: [Color(0xFF1C1C1C), Color(0xFF1C1C1C)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+
+                ),
+                image: DecorationImage(
+
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
                 ),
               ),
               child: SafeArea(
@@ -296,8 +414,9 @@ Future<void> _logout() async {
                     vertical: screenHeight * 0.02,
                   ),
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    color: AppColors.backgroundColor,
+
                     boxShadow: const [
                       BoxShadow(
                         color: AppColors.secondaryColor,
@@ -439,156 +558,85 @@ Future<void> _logout() async {
   }
 
 //ملف الصوت
-
-  Widget _buildAudioRecorderUI() {
-    return Column(
-      children: [
-        if (recordingPath != null)
-          const Text(
-            "التسجيل جاهز للتشغيل",
-            style: TextStyle(fontSize: 18, color: Colors.green),
-          ),
-        if (recordingPath == null)
-          const Text(
-            "لايوجد تسجيل",
-            style: TextStyle(fontSize: 18, color: Colors.red),
-          ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _recordingButton(),
-            const SizedBox(width: 20),
-            _playbackButton(),
-            const SizedBox(width: 20),
-            _deleteRecordingButton(),
-          ],
+ 
+Widget _buildAudioRecorderUI() {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      // الحالة النصية
+      Text(
+        _statusMessage,
+        style: const TextStyle(
+          color: Color(0xFF36623F), // اللون الأخضر
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(height: 20),
-        if (isRecording) _buildRecordingDuration(),
-      ],
-    );
-  }
-
-  Widget _buildRecordingDuration() {
-    final minutes = (recordDuration / 60).floor().toString().padLeft(2, '0');
-    final seconds = (recordDuration % 60).toString().padLeft(2, '0');
-    return Text(
-      "$minutes:$seconds",
-      style: const TextStyle(fontSize: 30, color: Colors.blue),
-    );
-  }
-
-  Widget _recordingButton() {
-    return FloatingActionButton(
-      onPressed: () async {
-        if (isRecording) {
-          String? filepath = await audioRecorder.stop();
-          timer?.cancel();
-          if (filepath != null) {
-            setState(() {
-              isRecording = false;
-              recordingPath = filepath;
-            });
-          }
-        } else {
-          if (await audioRecorder.hasPermission()) {
-            final Directory directory =
-                await getApplicationDocumentsDirectory();
-            final String filepath = p.join(directory.path, "recording.wav");
-            await audioRecorder.start(const RecordConfig(), path: filepath);
-
-            setState(() {
-              isRecording = true;
-              recordingPath = null;
-              recordDuration = 0;
-            });
-
-            timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-              setState(() {
-                recordDuration++;
-              });
-              if (recordDuration >= 60) {
-                timer?.cancel();
-                _stopRecording();
-              }
-            });
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("تحتاج إلى منح إذن التسجيل")),
-            );
-          }
-        }
-      },
-      child: Icon(
-        isRecording ? Icons.stop : Icons.mic,
       ),
-    );
-  }
+      const SizedBox(height: 20),
+      // الوقت المتبقي أثناء التسجيل
+      Text(
+        _isRecording ? "الوقت المتبقي: $_timeLeft ثانية" : "",
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+        ),
+      ),
+      const SizedBox(height: 20),
+      // الأزرار
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // زر الحذف (يسار)
+          _buildButton(
+            icon: Icons.delete,
+            onPressed: (_audioPath != null) ? deleteAudio : null, // تفعيل فقط عند وجود تسجيل
+            color: (_audioPath != null) ? const Color(0xFF36623F) : Colors.grey,
+          ),
+          const SizedBox(width: 40), // مساحة بين الحذف والميكروفون
+          // زر التسجيل (في المنتصف)
+          _buildButton(
+            icon: _isRecording ? Icons.stop : Icons.mic,
+            onPressed: _isRecording ? stopRecording : startRecording,
+            color: const Color(0xFF36623F),
+          ),
+          const SizedBox(width: 40), // مساحة بين الميكروفون والتشغيل
+          // زر التشغيل (يمين)
+          _buildButton(
+            icon: (_isPlaying) ? Icons.stop : Icons.play_arrow,
+            onPressed: (_audioPath != null)
+                ? (_isPlaying ? stopAudio : playAudio) // تفعيل فقط عند وجود تسجيل
+                : null,
+            color: (_audioPath != null) ? const Color(0xFF36623F) : Colors.grey,
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
-  Widget _playbackButton() {
-    return FloatingActionButton(
-      onPressed: recordingPath == null
-          ? null
-          : () async {
-              if (isPlaying) {
-                await audioPlayer.stop();
-                setState(() {
-                  isPlaying = false;
-                });
-              } else {
-                await audioPlayer.setFilePath(recordingPath!);
-                audioPlayer.play();
-                setState(() {
-                  isPlaying = true;
-                });
-                audioPlayer.playerStateStream.listen((state) {
-                  if (state.playing == false) {
-                    setState(() {
-                      isPlaying = false;
-                    });
-                  }
-                });
-              }
-            },
-      backgroundColor: recordingPath == null ? Colors.grey : Colors.blue,
-      child: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-    );
-  }
+ Widget _buildButton({
+  required IconData icon,
+  required VoidCallback? onPressed, // اجعل `onPressed` قابلًا لأن يكون فارغًا
+  required Color color,
+}) {
+  return GestureDetector(
+    onTap: onPressed, // لا تفعل شيء إذا كان `onPressed` null
+    child: Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: onPressed != null ? Colors.grey.shade300 : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Icon(
+        icon,
+        color: onPressed != null ? color : Colors.grey, // تغيير اللون عند التعطيل
+        size: 30,
+      ),
+    ),
+  );
+}
 
-  Widget _deleteRecordingButton() {
-    return FloatingActionButton(
-      onPressed: recordingPath == null
-          ? null
-          : () {
-              setState(() {
-                recordingPath = null;
-              });
-            },
-      backgroundColor: recordingPath == null ? Colors.grey : Colors.red,
-      child: const Icon(Icons.delete),
-    );
-  }
-
-  void _stopRecording() async {
-    if (isRecording) {
-      String? filepath = await audioRecorder.stop();
-      timer?.cancel();
-      if (filepath != null) {
-        setState(() {
-          isRecording = false;
-          recordingPath = filepath;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    audioPlayer.dispose();
-    timer?.cancel();
-    super.dispose();
-  }
 // ملف الصوت
 
   Widget _buildTextArea({
@@ -799,7 +847,7 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
 
 
 
-  void _pickImages() async {
+void _pickImages() async {
   try {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
@@ -810,7 +858,9 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
       if (result.files.length <= 5) {
         final allowedExtensions = ['jpg', 'jpeg', 'png']; // أنواع الصور المسموح بها
 
-        final files = result.files.map((file) {
+        final List<File> files = [];
+
+        for (var file in result.files) {
           final fileSizeKB = file.size / 1024; // تحويل الحجم إلى كيلوبايت
           final extension = file.extension?.toLowerCase(); // الحصول على الامتداد
 
@@ -819,20 +869,36 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('يجب أن تكون الصورة من نوع JPG أو PNG')),
             );
-            return null; // تجاهل الملفات التي لا تتطابق مع النوع المسموح به
+            return; // إيقاف العملية إذا كان هناك نوع غير مدعوم
           }
 
-          // التحقق من حجم الصورة الواحدة
-          if (fileSizeKB > 150) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('كل صورة يجب أن تكون أقل من 150 كيلوبايت')),
-            );
-            return null; // تجاهل الملفات التي تتجاوز الحد
+          File processedFile = File(file.path!);
+
+          // ضغط الصورة إذا كان الحجم أكبر من 500 كيلوبايت
+          if (fileSizeKB > 500) {
+            final imageBytes = processedFile.readAsBytesSync();
+            final decodedImage = img.decodeImage(imageBytes);
+
+            if (decodedImage != null) {
+  // ضغط الصورة بجودة 85%
+  final compressedImage = img.encodeJpg(decodedImage, quality: 85);
+  processedFile.writeAsBytesSync(compressedImage); // تعديل الملف مباشرةً
+}
+
+            // التحقق من الحجم بعد الضغط
+            final newFileSizeKB = processedFile.lengthSync() / 1024;
+            if (newFileSizeKB > 500) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('الصورة "${file.name}" حجمها لا يزال أكبر من 500 كيلوبايت بعد الضغط')),
+              );
+              return; // إيقاف العملية إذا لم تنجح عملية الضغط
+            }
           }
 
-          return File(file.path!);
-        }).whereType<File>().toList(); // التأكد من أن الصور المقبولة فقط هي التي سيتم معالجتها
+          files.add(processedFile);
+        }
 
+        // تحديث الحالة فقط إذا كانت جميع الصور مقبولة
         setState(() {
           _files = files;
         });
@@ -853,7 +919,7 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
 
 
 
-  void _pickPdf() async {
+void _pickPdf() async {
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -863,17 +929,16 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
     if (result != null && result.files.isNotEmpty) {
       final file = File(result.files.single.path!);
 
-      // Check the size of the selected file
-      final fileSizeMB =
-          await file.length() / (1024 * 1024); // Convert bytes to MB
+      // التحقق من حجم الملف
+      final fileSizeMB = await file.length() / (1024 * 1024); // تحويل الحجم إلى ميجابايت
       if (fileSizeMB > 2) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('الملف يجب أن يكون أقل من 2 ميجابايت')),
+          const SnackBar(content: Text('الملف يجب أن يكون أقل من 2 ميجابايت')),
         );
-        return; 
+        return; // إيقاف العملية إذا تجاوز الحجم
       }
 
+      // إذا كان الحجم أقل من 2 ميجابايت، تابع العملية
       setState(() {
         _files = [file];
       });
@@ -883,59 +948,6 @@ class _FileAttachmentWidgetState extends State<FileAttachmentWidget> {
     print('Error picking file: $e');
   }
 }
-
-
-
-// void _pickImagesFromCamera() async {
-//   final ImagePicker picker = ImagePicker();
-
-//   if (_cameraUsageCount < 5) {
-//     try {
-//       final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-//       if (pickedFile != null) {
-//         print('Path from camera: ${pickedFile.path}'); // تأكد من صحة المسار
-
-//         final file = File(pickedFile.path);
-//         final allowedExtensions = ['jpg', 'jpeg', 'png']; // أنواع الصور المسموح بها
-//         final fileSizeKB = file.lengthSync() / 1024; // حجم الملف بالكيلوبايت
-//         final extension = pickedFile.path.split('.').last.toLowerCase(); // امتداد الملف
-
-//         // التحقق من نوع الصورة
-//         if (!allowedExtensions.contains(extension)) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             const SnackBar(content: Text('يجب أن تكون الصورة من نوع JPG أو PNG')),
-//           );
-//           return; // تجاهل الملف إذا لم يكن من النوع المسموح به
-//         }
-
-//         // التحقق من حجم الصورة (حد 15 ميجابايت)
-//         if (fileSizeKB > 15360) { // 15 ميجابايت بالكيلوبايت
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             const SnackBar(content: Text('الصورة يجب أن تكون أقل من 15 ميجابايت')),
-//           );
-//           return; // تجاهل الملف إذا كان حجمه أكبر من 15 ميجابايت
-//         }
-
-//         // تحديث قائمة الملفات
-//         setState(() {
-//           _files = _files != null ? [..._files!, file] : [file];
-//           _cameraUsageCount++;
-//         });
-//         widget.onFilesSelected(_files!);
-//       }
-//     } catch (e) {
-//       print('Error picking image from camera: $e');
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('حدث خطأ أثناء التقاط الصورة: $e')),
-//       );
-//     }
-//   } else {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(content: Text('يمكنك استخدام الكاميرا 5 مرات فقط')),
-//     );
-//   }
-// }
 
 
 

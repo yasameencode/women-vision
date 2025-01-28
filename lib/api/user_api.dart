@@ -28,7 +28,7 @@ Future<bool> registerUser(String username, String password, String gmail,
       "sections_id": sectionsId,
     }),
   );
-
+  
   print('Response body: ${response.body}');
 
   try {
@@ -89,31 +89,36 @@ Future<bool> loginUser(String username, String password) async {
   }
 }
 
-
 Future<void> checkAndRefreshToken() async {
+  // تحميل التوكنات من SharedPreferences
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? accessToken = prefs.getString('token');
   String? refreshToken = prefs.getString('refresh_token');
 
-  if (accessToken != null) {
-    // تحقق من انتهاء صلاحية التوكن
+  // التحقق من انتهاء صلاحية التوكن
+  if (accessToken != null && refreshToken != null) {
     bool isExpired = isTokenExpired(accessToken);
     if (isExpired) {
       print('Access token is expired.');
-      if (refreshToken != null) {
-        // استدعاء دالة تجديد التوكن
-        await refreshAccessToken(refreshToken);
-        print('Access token has been refreshed.');
+
+      // استدعاء دالة تجديد التوكن باستخدام التوكن المنعش
+      bool success = await refreshAccessToken(refreshToken);
+      if (success) {
+        print('Access token has been refreshed successfully.');
       } else {
-        print('No refresh token available.');
+        print('Failed to refresh access token.');
       }
     } else {
       print('Access token is still valid.');
     }
   } else {
-    print('No access token available.');
+    print('Access token or refresh token is null.');
+    // يمكنك هنا تنفيذ إجراءات إضافية مثل تسجيل الخروج أو طلب إعادة تسجيل الدخول من المستخدم
   }
 }
+
+
+
 
 // دالة للتحقق من انتهاء صلاحية التوكن
 bool isTokenExpired(String token) {
@@ -123,7 +128,7 @@ bool isTokenExpired(String token) {
 
 
 
-Future<void> refreshAccessToken(String refreshToken) async {
+Future<bool> refreshAccessToken(String refreshToken) async {
   final response = await http.post(
     Uri.parse(baseUrl),
     headers: {"Content-Type": "application/json"},
@@ -140,13 +145,17 @@ Future<void> refreshAccessToken(String refreshToken) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['access_token']);
       print('New access token: ${data['access_token']}');
+      return true; // النجاح
     } else {
       print('Failed to refresh token: ${data['error']}');
+      return false; // فشل بسبب استجابة السيرفر
     }
   } else {
     print('Request failed with status: ${response.statusCode}');
+    return false; // فشل بسبب استجابة HTTP غير ناجحة
   }
 }
+
 
 
 Future<Map<String, dynamic>?> fetchUserData() async {
@@ -154,44 +163,40 @@ Future<Map<String, dynamic>?> fetchUserData() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   int? userId = prefs.getInt('user_id');
 
-  if (userId != null) {
-    // إرسال الطلب بدون التوكن
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "action": "getUserData",
-        "user_id": userId,
-        "role": "user",
-      }),
-    );
+  // إرسال الطلب بدون التوكن
+  final response = await http.post(
+    Uri.parse(baseUrl),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "action": "getUserData",
+      "user_id": userId,
+      "role": "user",
+    }),
+  );
 
-  if (response.statusCode == 200) {
-  try {
-    if (response.headers['content-type'] == 'application/json') {
-      final data = jsonDecode(response.body);
-      print('Data received: $data'); // إضافة الطباعة هنا
-      if (data['error'] == null) {
-        return data;
-      } else {
-        print('Error: ${data['error']}');
-      }
+if (response.statusCode == 200) {
+try {
+  if (response.headers['content-type'] == 'application/json') {
+    final data = jsonDecode(response.body);
+    print('Data received: $data'); // إضافة الطباعة هنا
+    if (data['error'] == null) {
+      return data;
     } else {
-      print('Non-JSON response received: ${response.body}');
+      print('Error: ${data['error']}');
     }
-  } catch (e) {
-    print('Error decoding JSON: $e');
+  } else {
+    print('Non-JSON response received: ${response.body}');
   }
+} catch (e) {
+  print('Error decoding JSON: $e');
+}
 } else {
-  print('Failed to fetch user data');
+print('Failed to fetch user data');
 }
 
 
-  } else {
-    print('No user ID found in SharedPreferences.');
-  }
   return null;
 }
 
@@ -201,11 +206,6 @@ Future<Map<String, dynamic>?> fetchUserData() async {
 Future<bool> uploadImage(File imageFile) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   int? userId = prefs.getInt('user_id');
-
-  if (userId == null) {
-    print('No user ID found in SharedPreferences.');
-    return false;
-  }
 
   if (!imageFile.existsSync()) {
     print('Image file does not exist');

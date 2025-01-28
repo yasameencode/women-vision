@@ -9,6 +9,8 @@ import 'api/user_api.dart';
 import 'theme/appcolors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'GuestPage.dart';
+import 'package:flutter/services.dart';
 
 
 
@@ -23,6 +25,7 @@ class VariablePage extends StatefulWidget {
 }
 
 class _VariablePageState extends State<VariablePage> {
+   static const platform = MethodChannel('com.yourapp.channel/universal_links'); 
   final ApiService apiService = ApiService();
   StreamSubscription? _sub;
   String? receivedCode;
@@ -33,6 +36,7 @@ class _VariablePageState extends State<VariablePage> {
   void initState() {
     super.initState();
     _initDeepLinkListener();
+    _setupMethodChannelListener();
   }
 
   @override
@@ -41,22 +45,48 @@ class _VariablePageState extends State<VariablePage> {
     super.dispose();
   }
 
-  void _initDeepLinkListener() {
-    _sub = uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        final code = uri.queryParameters['code'];
+void _initDeepLinkListener() {
+  _sub = uriLinkStream.listen((Uri? uri) {
+    if (uri != null) {
+      final code = uri.queryParameters['code'];
+      if (code != null) {
+        print('Received code from deep link: $code');
+        setState(() {
+          receivedCode = code;
+        });
+        _sendCodeToApi(code); // إرسال الكود إلى API
+      } else {
+        print('No "code" parameter found in the URI.');
+      }
+    }
+  }, onError: (err) {
+    print('Failed to receive link: $err');
+  });
+}
+
+
+void _setupMethodChannelListener() {
+    platform.setMethodCallHandler((MethodCall call) async {
+      if (call.method == "onReceivedCode") {
+        final String? code = call.arguments;
         if (code != null) {
-          print('Received code from deep link: $code');
+          print('Received code from iOS: $code');
           setState(() {
             receivedCode = code;
           });
-          _sendCodeToApi(code);
+          _sendCodeToApi(code); // إرسال الكود إلى API
         }
       }
-    }, onError: (err) {
-      print('Failed to receive link: $err');
     });
   }
+
+
+
+
+
+
+
+
 
   Future<void> _register(BuildContext context) async {
     const urlString = 'https://ur.gov.iq/verify-auth?client_id=212&redirect_uri=https://eyn.ur.gov.iq/callback.php/';
@@ -325,31 +355,66 @@ Future<void> _sendUserDataToApi(Map<String, dynamic> userData) async {
                   //   ),
                   // ),
                   const SizedBox(width: 7),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _register(context),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.buttonColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                          child: Center(
-                            child: Text(
-                              'تسجيل دخول',
-                              style: GoogleFonts.tajawal(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                Expanded(
+  child: GestureDetector(
+    onTap: () => _register(context),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.buttonColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        child: Center(
+          child: Text(
+            'تسجيل دخول',
+            style: GoogleFonts.tajawal(
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 16), // إضافة مسافة بين الزرين
+Expanded(
+  child: GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginPage(), // استبدل بـ الصفحة المطلوبة
+        ),
+      );
+    },
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300, // لون مختلف لتمييز الزر
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        child: Center(
+          child: Text(
+            'صفحة الضيف',
+            style: GoogleFonts.tajawal(
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+),
+
+
                 ],
               ),
             ],

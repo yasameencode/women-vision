@@ -8,6 +8,8 @@ import '../api/api_women_health.dart';
 import 'whealthdetails.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_html/flutter_html.dart';
+
 
 class WhealthPage extends StatefulWidget {
   const WhealthPage({super.key});
@@ -315,6 +317,7 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Stack(
           children: [
             // AppBar with gradient and custom content
@@ -323,9 +326,14 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
               left: 0,
               right: 0,
               child: Container(
-                height: screenHeight * 0.20,
+                height: screenHeight * 0.25,
                 decoration: const BoxDecoration(
                   color: AppColors.secondaryColor,
+                  image: DecorationImage(
+
+                    image: AssetImage('assets/images/appbarnew.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -421,7 +429,7 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
             ),
 
             Positioned(
-              top: 130,
+              top: 180,
               left: 0,
               right: 0,
               child: Center(
@@ -471,7 +479,7 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
 
             // Body content with search box and TabBar
             Positioned.fill(
-              top: 240,
+              top: 300,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -531,7 +539,9 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
                               ),
                             ),
                             child: Center(child: Text(womenTab,
+
                               style: TextStyle(
+                                fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14,
               color: _selectedTabIndex == 1
                   ? Colors.grey // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -552,6 +562,7 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
                             ),
                             child: Center(child: Text(childTab,
                             style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 14,
               color: _selectedTabIndex == 1
                   ? Colors.grey // White text for selected tab
                   : Colors.grey, // Black text for unselected tabs
@@ -652,13 +663,15 @@ class _WhealthPageState extends State<WhealthPage>with SingleTickerProviderState
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
+                       Html(
+                        data: shortDescription,
+                        style: {
+                          "body": Style(
+                            fontSize: FontSize(12.0),
                             color: AppColors.textColor,
-                            fontSize: 12,
                           ),
-                        ),
+                        },
+                      ),
                         const SizedBox(height: 4),
                         Row(
                           children: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:merge_voice_coplain/infoAR.dart';
 // import '../main.dart';
 
 
@@ -73,9 +74,12 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('معلومات التطبيق'),
-            subtitle: const Text('Version 1.0.0'),
+            subtitle: const Text('Version 2.0.0'),
             onTap: () {
-              // Show app info
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Infoar()),
+              );
             },
           ),
 
