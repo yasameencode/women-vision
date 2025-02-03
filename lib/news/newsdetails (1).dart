@@ -1004,12 +1004,14 @@ Future<void> _logout() async {
                         ),
                         const SizedBox(height: 4),
                         // Short description of the event
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
+                          Html(
+                          data: shortDescription,
+                          style: {
+                            "body": Style(
+                              fontSize: FontSize(12.0),
+                              color: AppColors.textColor,
+                            ),
+                          },
                         ),
                         const SizedBox(height: 4),
                         // Display the created_at date with an icon
