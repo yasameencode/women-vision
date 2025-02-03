@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'GuestPage.dart';
 import 'package:flutter/services.dart';
-
+import 'dart:io';
 
 
 class VariablePage extends StatefulWidget {
@@ -66,19 +66,21 @@ void _initDeepLinkListener() {
 
 
 void _setupMethodChannelListener() {
-    platform.setMethodCallHandler((MethodCall call) async {
-      if (call.method == "onReceivedCode") {
-        final String? code = call.arguments;
-        if (code != null) {
-          print('Received code from iOS: $code');
-          setState(() {
-            receivedCode = code;
-          });
-          _sendCodeToApi(code); // إرسال الكود إلى API
-        }
+  platform.setMethodCallHandler((MethodCall call) async {
+    if (call.method == "onReceivedCode") {
+      final String? code = call.arguments;
+      if (code != null) {
+        print('Received code from iOS: $code');
+        setState(() {
+          receivedCode = code;
+        });
+        _sendCodeToApi(code); // إرسال الكود إلى الخادم
+      } else {
+        print("No code received.");
       }
-    });
-  }
+    }
+  });
+}
 
 
 
@@ -92,10 +94,19 @@ void _setupMethodChannelListener() {
     const urlString = 'https://ur.gov.iq/verify-auth?client_id=212&redirect_uri=https://eyn.ur.gov.iq/callback.php/';
     final Uri url = Uri.parse(urlString);
 
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (Platform.isIOS) {
+      try {
+        await platform.invokeMethod('openSafariView', {"url": urlString});
+      } catch (e) {
+        print('Failed to open Safari View Controller: $e');
+        _showPopup(context, 'تعذر فتح الرابط. حاول مرة أخرى.', 'تم');
+      }
     } else {
-      _showPopup(context, 'تعذر فتح الرابط. حاول مرة أخرى.', 'تم');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        _showPopup(context, 'تعذر فتح الرابط. حاول مرة أخرى.', 'تم');
+      }
     }
   }
 
@@ -330,30 +341,6 @@ Future<void> _sendUserDataToApi(Map<String, dynamic> userData) async {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Expanded(
-                  //   child: GestureDetector(
-                  //     onTap: () {
-                  //       Navigator.pushNamed(context, '/login');
-                  //     },
-                  //     child: Container(
-                  //       padding: const EdgeInsets.symmetric(vertical: 10),
-                  //       decoration: BoxDecoration(
-                  //         border: Border.all(color: AppColors.buttonColor),
-                  //         borderRadius: BorderRadius.circular(12),
-                  //       ),
-                  //       child: Center(
-                  //         child: Text(
-                  //           'تسجيل الدخول',
-                  //           style: GoogleFonts.tajawal(
-                  //             fontWeight: FontWeight.w400,
-                  //             fontSize: 16,
-                  //             color: AppColors.buttonColor,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   const SizedBox(width: 7),
                 Expanded(
   child: GestureDetector(
@@ -448,193 +435,3 @@ Expanded(
 
 
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:google_fonts/google_fonts.dart';
-// import 'package:url_launcher/url_launcher.dart';
-// import 'api/user_api.dart';
-// import 'theme/appcolors.dart';
-// // import 'package:http/http.dart' as http;
-// // import 'dart:convert';
-
-// class VariablePage extends StatelessWidget {
-//   final int userType; // استلام رقم المستخدم
-//   final VoidCallback togglePage; // التبديل بين الصفحات
-//   VariablePage({super.key, required this.togglePage, required this.userType});
-
-//   final ApiService apiService = ApiService();
-
-  
-
-
-
-
-// // تعديل دالة _register لفتح بوابة أور باستخدام canLaunchUrl و launchUrl
-//  Future<void> _register(BuildContext context) async {
-//     const urlString = 'https://ur.gov.iq/verify-auth?client_id=212&redirect_uri=https://eyn.ur.gov.iq/callback.php/';
-//     final Uri url = Uri.parse(urlString);
-
-//     // التأكد من إمكانية فتح الرابط
-//     if (await canLaunchUrl(url)) {
-//       await launchUrl(url, mode: LaunchMode.externalApplication); // فتح الرابط في المتصفح الخارجي
-//     } else {
-//       // إذا تعذر فتح الرابط، عرض رسالة خطأ
-//       _showPopup(context, 'تعذر فتح الرابط. حاول مرة أخرى.', 'تم');
-//     }
-//   }
-
-
-
-
-//   // دالة لعرض الرسالة المنبثقة
-//   void _showPopup(BuildContext context, String message, String buttonText) {
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext context) {
-//         return AlertDialog(
-//           shape: RoundedRectangleBorder(
-//             borderRadius: BorderRadius.circular(12),
-//           ),
-//           title: Text(
-//             message,
-//             textAlign: TextAlign.center,
-//             style: GoogleFonts.tajawal(
-//               fontWeight: FontWeight.w700,
-//               fontSize: 18,
-//               color: AppColors.headerColor,
-//             ),
-//           ),
-//           actions: [
-//             Center(
-//               child: TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: Text(
-//                   buttonText,
-//                   style: GoogleFonts.tajawal(
-//                     fontWeight: FontWeight.w400,
-//                     fontSize: 16,
-//                   color: AppColors.buttonColor,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return FractionallySizedBox(
-//       heightFactor: 0.5, // تأخذ نصف ارتفاع الشاشة
-//       child: Center(
-//         child: Container(
-//           width: double.infinity, // تضمن أن الحاوية تأخذ العرض الكامل للشاشة
-//           decoration: BoxDecoration(
-//             color: AppColors.backgroundColor,
-//             borderRadius: BorderRadius.circular(32),
-//           ),
-//           padding: const EdgeInsets.all(24),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               Container(
-//                 margin: const EdgeInsets.only(bottom: 12),
-//                 width: 72,
-//                 height: 24,
-//                 child: SvgPicture.asset(
-//                   'assets/images/network.svg',
-//                   fit: BoxFit.cover,
-//                 ),
-//               ),
-//               Container(
-//                 margin: const EdgeInsets.only(bottom: 12),
-//                 child: Text(
-//                   'يجب تسجيل الدخول اولاً',
-//                   style: GoogleFonts.tajawal(
-//                     fontWeight: FontWeight.w700,
-//                     fontSize: 18,
-//                     height: 1.6,
-//                     color: const Color(0xFFD92D20),
-//                   ),
-//                 ),
-//               ),
-//               Container(
-//                 margin: const EdgeInsets.only(bottom: 24),
-//                 child: Text(
-//                   'تحتاج الى تسجيل حساب للوصول الى معلومات هذه الصفحة يمكنك تسجيل حساب عبر الزر الموجود في الاسفل',
-//                   textAlign: TextAlign.center,
-//                   style: GoogleFonts.tajawal(
-//                     fontWeight: FontWeight.w400,
-//                     fontSize: 16,
-//                     height: 1.6,
-//                     letterSpacing: 0.3,
-//                     color:AppColors.textColor,
-//                   ),
-//                 ),
-//               ),
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Expanded(
-//                     child: GestureDetector(
-//                       onTap: () {
-//                         Navigator.pushNamed(context, '/login'); // الانتقال إلى صفحة تسجيل الدخول
-//                       },
-//                       child: Container(
-//                         padding: const EdgeInsets.symmetric(vertical: 10),
-//                         decoration: BoxDecoration(
-//                           border: Border.all(color: AppColors.buttonColor),
-//                           borderRadius: BorderRadius.circular(12),
-//                         ),
-//                         child: Center(
-//                           child: Text(
-//                             'تسجيل الدخول',
-//                             style: GoogleFonts.tajawal(
-//                               fontWeight: FontWeight.w400,
-//                               fontSize: 16,
-//                               color: AppColors.buttonColor,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 7), // المسافة بين الأزرار
-//                   Expanded(
-//                     child: GestureDetector(
-//                       onTap: () => _register(context), // استدعاء دالة التسجيل
-//                       child: Container(
-//                         decoration: BoxDecoration(
-//                           color: AppColors.buttonColor,
-//                           borderRadius: BorderRadius.circular(12),
-//                         ),
-//                         child: Container(
-//                           height: 48,
-//                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-//                           child: Center(
-//                             child: Text(
-//                               'انشاء حساب',
-//                               style: GoogleFonts.tajawal(
-//                                 fontWeight: FontWeight.w400,
-//                                 fontSize: 16,
-//                                 color: Colors.white,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

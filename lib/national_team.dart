@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,16 +20,14 @@ class national_team extends StatefulWidget {
   _national_teamState createState() => _national_teamState();
 }
 
-class _national_teamState extends State<national_team> with SingleTickerProviderStateMixin{
-  late TabController _tabController;
+class _national_teamState extends State<national_team> {
   int _selectedIndex = 1;
   int? userType;
   bool _isLoading = false;
   String lang = 'ar';
   String _searchQuery = '';
-  int? userId; // To store the userId
+  int? userId;
 
-  // النصوص المتغيرة بناءً على اللغة
   String title = 'الفريق الوطني';
   String subtitle = 'اطلع على اخبار الفريق الوطني';
   String searchHint = 'ابحث عن الخبر';
@@ -49,11 +48,10 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _loadUserId(); 
-    _tabController = TabController(length: 2, vsync: this);
+    _loadUserId();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (userType != null) {
-        _fetchefficiency(); // استدعاء البيانات افتراضيًا عند التحميل
+        _fetchefficiency();
       }
     });
   }
@@ -62,7 +60,7 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
   void didChangeDependencies() {
     super.didChangeDependencies();
     final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (arguments != null) {
       setState(() {
@@ -70,7 +68,6 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
       });
     }
 
-    // التحقق واستدعاء البيانات عند تغيير `userType`
     if (userType != null) {
       _fetchefficiency();
     }
@@ -78,7 +75,6 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
 
   @override
   void dispose() {
-    _tabController.dispose(); // Dispose the TabController when the widget is disposed
     super.dispose();
   }
 
@@ -115,7 +111,7 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
     try {
       final api = ApiNews();
       final articles =
-          await api.efficiency(sectionId: userType.toString(), lang: lang);
+      await api.efficiency(sectionId: userType.toString(), lang: lang);
 
       setState(() {
         womenHealthImages =
@@ -212,228 +208,225 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: screenHeight * 0.25,
-                decoration: const BoxDecoration(
-                  color: AppColors.secondaryColor,
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/appbarnew.jpg'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: AppColors.backgroundColor,
-                          radius: screenWidth * 0.06,
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back_ios_rounded,
-                              color: Colors.black,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ),
-                        PopupMenuButton<int>(
-                          icon: SvgPicture.asset(
-                            'assets/images/menu.svg',
-                            width: 24,
-                            height: 24,
-                            color: const Color.fromARGB(255, 255, 255, 255),
-                          ),
-                          itemBuilder: (context) => [
-                            if (userId != null)
-                              PopupMenuItem(
-                                value: 1,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
-                                    const SizedBox(width: 8),
-                                    Text(logoutText),
-                                  ],
-                                ),
-                              ),
-                            const PopupMenuItem(
-                              value: 2,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.language, color: Colors.black),
-                                  SizedBox(width: 8),
-                                  Text('العربية'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 3,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.language, color: Colors.black),
-                                  SizedBox(width: 8),
-                                  Text('English'),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value == 1) {
-                              if (userId != null) {
-                                _logout();
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
-                                );
-                              }
-                            } else if (value == 2) {
-                              setState(() {
-                                lang = 'ar';
-                              });
-                              _fetchDataBasedOnLanguage(lang);
-                            } else if (value == 3) {
-                              setState(() {
-                                lang = 'en';
-                              });
-                              _fetchDataBasedOnLanguage(lang);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: screenHeight * 0.28,
+              decoration: const BoxDecoration(
+                color: AppColors.secondaryColor,
+                image: DecorationImage(
+                  image: AssetImage('assets/images/appbarnew.jpg'),
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-            Positioned(
-              top: 180,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 327,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 8,
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: AppColors.backgroundColor,
+                        radius: screenWidth * 0.06,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: Colors.black,
+                            size: 18,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                      PopupMenuButton<int>(
+                        icon: SvgPicture.asset(
+                          'assets/images/menu.svg',
+                          width: 24,
+                          height: 24,
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                        itemBuilder: (context) => [
+                          if (userId != null)
+                            PopupMenuItem(
+                              value: 1,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.logout, color: Color.fromARGB(255, 0, 0, 0)),
+                                  const SizedBox(width: 8),
+                                  Text(logoutText),
+                                ],
+                              ),
+                            ),
+                          const PopupMenuItem(
+                            value: 2,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.language, color: Colors.black),
+                                SizedBox(width: 8),
+                                Text('العربية'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 3,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.language, color: Colors.black),
+                                SizedBox(width: 8),
+                                Text('English'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          if (value == 1) {
+                            if (userId != null) {
+                              _logout();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('لا يوجد مستخدم لتسجيل الخروج')),
+                              );
+                            }
+                          } else if (value == 2) {
+                            setState(() {
+                              lang = 'ar';
+                            });
+                            _fetchDataBasedOnLanguage(lang);
+                          } else if (value == 3) {
+                            setState(() {
+                              lang = 'en';
+                            });
+                            _fetchDataBasedOnLanguage(lang);
+                          }
+                        },
                       ),
                     ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.tajawal(
-                            fontSize: 18,
-                            color: AppColors.headerColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          subtitle,
-                          style: GoogleFonts.tajawal(
-                            fontSize: 12,
-                            color: AppColors.textColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 180,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 327,
+                height: 90,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 8,
                     ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.tajawal(
+                          fontSize: 18,
+                          color: AppColors.headerColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.tajawal(
+                          fontSize: 12,
+                          color: AppColors.textColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            Positioned.fill(
-              top: 300,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: searchHint,
-                              prefixIcon: const Icon(Icons.search),
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
+          ),
+          Positioned.fill(
+            top: 300,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: searchHint,
+                            prefixIcon: const Icon(Icons.search),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
                             ),
-                            onChanged: (query) {
-                              setState(() {
-                                _searchQuery = query;
-                                _fetchefficiency();
-                              });
-                            },
                           ),
+                          onChanged: (query) {
+                            setState(() {
+                              _searchQuery = query;
+                              _fetchefficiency();
+                            });
+                          },
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _buildListView(
-                                  filteredWomenHealthImages,
-                                  filteredWomenHealthTitles,
-                                  filteredWomenHealthDescriptions,
-                                  filteredWomenHealthDates,
-                                ),
-                        ],
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Replaced TabBarView with ListView.builder
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildListView(
+                      filteredWomenHealthImages,
+                      filteredWomenHealthTitles,
+                      filteredWomenHealthDescriptions,
+                      filteredWomenHealthDates,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-          lang: lang,
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+        lang: lang,
       ),
     );
   }
 
-  Widget _buildListView(List<String> images, List<String> titles,
-      List<String> descriptions, List<String> dates) {
+  // _buildListView function to display the list
+  Widget _buildListView(
+      List<String> images,
+      List<String> titles,
+      List<String> descriptions,
+      List<String> dates,
+      ) {
     return ListView.builder(
       itemCount: images.length,
       itemBuilder: (context, index) {
@@ -449,7 +442,7 @@ class _national_teamState extends State<national_team> with SingleTickerProvider
         String shortDescription = truncateDescription(descriptions[index]);
 
         return GestureDetector(
-            onTap: () {
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(

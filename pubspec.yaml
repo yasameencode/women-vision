@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
 
   uni_links2: ^0.6.0+2
+  cached_network_image: ^3.4.1  
+  shimmer: ^3.0.0
   image: ^4.5.2
   url_launcher: ^6.2.5
   flutter_widget_from_html: ^0.15.3

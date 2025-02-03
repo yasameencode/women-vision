@@ -8,6 +8,8 @@ import 'buttomnav.dart';
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CardsPage extends StatefulWidget {
   const CardsPage({super.key});
@@ -22,11 +24,13 @@ class _CardsPageState extends State<CardsPage> {
   String lang = 'ar';
     int? userId; // To store the userId
  List<String> images = [];
- 
+  double screenWidth = 0;
+  double imageSize = 0;
+  double fontSize = 0;
  @override
   void initState() {
     super.initState();
-    _loadUserId(); 
+    _loadUserId();
    _fetchImages();
   }
 
@@ -194,10 +198,6 @@ Future<void> _logout() async {
     print('Error occurred during logout: $e');
   }
 }
-
-
-
-
 Future<void> _fetchImages() async {
   try {
     final response = await http.post(
@@ -224,19 +224,11 @@ Future<void> _fetchImages() async {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double imageSize = screenWidth * 0.1;
+    double fontSize = screenWidth * 0.04;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -254,11 +246,11 @@ Future<void> _fetchImages() async {
                 radius: 18,
               ),
             ),
-            const Text(
+            Text(
               'عين المرأة',
               style: TextStyle(
                 fontFamily: 'Cairo',
-                fontSize: 18,
+                fontSize: fontSize, // Apply responsive font size here
                 color: Colors.black,
               ),
             ),
@@ -268,8 +260,8 @@ Future<void> _fetchImages() async {
                   ? PopupMenuButton<int>(
                 icon: SvgPicture.asset(
                   'assets/images/menu.svg',
-                  width: 24,
-                  height: 24,
+                  width: imageSize,
+                  height: imageSize,
                   color: AppColors.secondaryColor,
                 ),
                 itemBuilder: (context) => [
@@ -307,7 +299,7 @@ Future<void> _fetchImages() async {
                     );
                   }
                 },
-                
+
               )
                   : const SizedBox.shrink(), // Empty widget if userId is null
             ),
@@ -333,50 +325,62 @@ Future<void> _fetchImages() async {
               crossAxisAlignment: CrossAxisAlignment.start,
               textDirection: TextDirection.rtl,
               children: [
-                const Text(
+                 Text(
                   'مرحبآ',
                   style: TextStyle(
                     fontFamily: 'Tajawal',
-                    fontSize: 20,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'بماذا يمكننا مساعدتك اليوم ؟',
                   style: TextStyle(
                     fontFamily: 'Tajawal',
-                    fontSize: 16,
+                    fontSize: fontSize,
                   ),
                 ),
                 const SizedBox(height: 10),
                 // Add the slider here
                 CarouselSlider(
-  items: images.map((imagePath) { // الصور يتم جلبها من قائمة "images" التي تحتوي على البيانات من API
-    return Builder(
-      builder: (BuildContext context) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          margin: const EdgeInsets.symmetric(horizontal: 5.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-              image: NetworkImage('https://eyn.ur.gov.iq/$imagePath'), // تحميل الصور ديناميكيًا من الإنترنت
-              fit: BoxFit.cover,
-            ),
-          ),
-        );
-      },
-    );
-  }).toList(),
-  options: CarouselOptions(
-    height: MediaQuery.of(context).size.height * 0.3,
-    autoPlay: true,
-    enlargeCenterPage: true,
-    aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 9 : 4 / 3,
-    viewportFraction: MediaQuery.of(context).size.width > 600 ? 0.8 : 0.9,
-  ),
-),
+                  items: images.map((imagePath) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10), // Apply border radius to the image
+                            child: CachedNetworkImage(
+                              imageUrl: 'https://eyn.ur.gov.iq/$imagePath', // URL to load the image from
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+
+                  options: CarouselOptions(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 9 : 4 / 3,
+                    viewportFraction: MediaQuery.of(context).size.width > 600 ? 0.8 : 0.9,
+                  ),
+                ),
 
 
                 const SizedBox(height: 20),
@@ -464,6 +468,9 @@ Future<void> _fetchImages() async {
 
   Widget _buildCard(
       String title, String svgAsset, Color cardColor, Color svgColor) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double imageSize = screenWidth * 0.1;
+    double fontSize = screenWidth * 0.04;
     return GestureDetector(
       onTap: () => _checkUserAndNavigate(title),
       child: Card(
@@ -475,8 +482,8 @@ Future<void> _fetchImages() async {
             children: [
               SvgPicture.asset(
                 svgAsset,
-                height: 40,
-                width: 40,
+                height: imageSize,
+                width: imageSize,
                 color: svgColor,
               ),
               const SizedBox(height: 8),
@@ -484,7 +491,7 @@ Future<void> _fetchImages() async {
                 title,
                 style: TextStyle(
                   fontFamily: 'Tajawal',
-                  fontSize: 13,
+                  fontSize: fontSize,
                   color: svgColor,
                 ),
                 textAlign: TextAlign.center,
@@ -498,37 +505,45 @@ Future<void> _fetchImages() async {
 
 
   Widget _buildCard2(
-    String title, String imageAsset, Color cardColor, Color textColor) {
-  return GestureDetector(
-    onTap: () => _checkUserAndNavigate(title),
-    child: Card(
-      color: cardColor.withOpacity(1),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(
-              imageAsset,
-              height: 40,
-              width: 40,
-              fit: BoxFit.contain, // لضمان عرض الصورة بدون قص
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'Tajawal',
-                fontSize: 13,
-                color: textColor, // لون النص
+      String title,
+      String imageAsset,
+      Color cardColor,
+      Color textColor
+      ) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double imageSize = screenWidth * 0.1;
+    double fontSize = screenWidth * 0.04;
+    return GestureDetector(
+      onTap: () => _checkUserAndNavigate(title), // Navigate on tap
+      child: Card(
+        color: cardColor.withOpacity(1), // Apply the card color with full opacity
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // Center the content vertically
+            crossAxisAlignment: CrossAxisAlignment.center, // Center the content horizontally
+            children: [
+              Image.asset(
+                imageAsset,
+                height: imageSize,
+                width: imageSize,
+                fit: BoxFit.contain,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                title, // The title to display
+                style: TextStyle(
+                  fontFamily: 'Tajawal', // Set custom font
+                  fontSize: fontSize, // Font size for the title
+                  color: textColor, // Set the text color
+                ),
+                textAlign: TextAlign.center, // Center the text
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-  
+    );
+  }
+
+
 }

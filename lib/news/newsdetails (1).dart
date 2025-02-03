@@ -10,6 +10,8 @@ import '../api/api_news.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_html/flutter_html.dart';
+
 
 // استيراد المكتبة
 
@@ -900,12 +902,14 @@ Future<void> _logout() async {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
-                            color: AppColors.textColor,
-                            fontSize: 12,
-                          ),
+                          Html(
+                          data: shortDescription,
+                          style: {
+                            "body": Style(
+                              fontSize: FontSize(12.0),
+                              color: AppColors.textColor,
+                            ),
+                          },
                         ),
                         const SizedBox(height: 4),
                         Row(

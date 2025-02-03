@@ -808,15 +808,15 @@ return Container(
                           textAlign: TextAlign.right,
                         ),
                         const SizedBox(height: 4),
-                        Html(
-                          data: shortDescription,
-                          style: {
-                            "body": Style(
-                              fontSize: FontSize(12.0),
-                              color: AppColors.textColor,
-                            ),
-                          },
-                        ),
+                        // Html(
+                        //   data: shortDescription,
+                        //   style: {
+                        //     "body": Style(
+                        //       fontSize: FontSize(12.0),
+                        //       color: AppColors.textColor,
+                        //     ),
+                        //   },
+                        // ),
                       ],
                     ),
                   ),
@@ -877,13 +877,15 @@ return Container(
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
+                        Html(
+                        data: shortDescription,
+                        style: {
+                          "body": Style(
+                            fontSize: FontSize(12.0),
                             color: AppColors.textColor,
-                            fontSize: 12,
                           ),
-                        ),
+                        },
+                      ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
@@ -976,13 +978,15 @@ return Container(
                         ),
                         const SizedBox(height: 4),
                         // Short description of the event
-                        Text(
-                          shortDescription,
-                          style: GoogleFonts.tajawal(
+                        Html(
+                        data: shortDescription,
+                        style: {
+                          "body": Style(
+                            fontSize: FontSize(12.0),
                             color: AppColors.textColor,
-                            fontSize: 12,
                           ),
-                        ),
+                        },
+                      ),
                         const SizedBox(height: 4),
                         // Display the created_at date with an icon
                         Row(
@@ -1031,34 +1035,34 @@ return Container(
     );
   }
 
-  void _navigateToJobDetails(BuildContext context, String title, String image,
-      String description, String date) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => workshopspage(
-          title: title,
-          image: image,
-          description: description,
-          date: date,
-        ),
-      ),
-    );
-  }
+  // void _navigateToJobDetails(BuildContext context, String title, String image,
+  //     String description, String date) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => workshopspage(
+  //         title: title,
+  //         image: image,
+  //         description: description,
+  //         date: date,
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  void _navigateToEventDetails(BuildContext context, String title, String image,
-      String description, String date) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => otherpage(
-          title: title,
-          image: image,
-          description: description,
-          date: date,
-        ),
-      ),
-    );
-  }
+  // void _navigateToEventDetails(BuildContext context, String title, String image,
+  //     String description, String date) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => otherpage(
+  //         title: title,
+  //         image: image,
+  //         description: description,
+  //         date: date,
+  //       ),
+  //     ),
+  //   );
+  // }
 
 }

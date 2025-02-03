@@ -37,27 +37,6 @@ import 'firebase_options.dart';
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp(); // تهيئة Firebase
-//   FirebaseMessaging.onBackgroundMessage(
-//       _firebaseMessagingBackgroundHandler); // معالجة رسائل الخلفية
-
-//   // تهيئة الإشعارات المحلية
-//   const AndroidInitializationSettings initializationSettingsAndroid =
-//       AndroidInitializationSettings('@mipmap/ic_launcher');
-
-//   const InitializationSettings initializationSettings = InitializationSettings(
-//     android: initializationSettingsAndroid,
-//   );
-
-//   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-//   runApp(MyApp());
-// }
-
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(

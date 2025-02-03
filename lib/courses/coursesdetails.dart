@@ -90,36 +90,38 @@ class coursespage extends StatelessWidget {
                 ],
               ),
               // Wrapping with SizedBox to control size
-              child: SizedBox(
-                width: 130,
-                height: 26,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        date, // استبدال النص الثابت بـ date
-                        style: const TextStyle(
-                          fontSize:
-                              12, // Adjusted size to fit within 26px height
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      icon: SvgPicture.asset(
-                        'assets/images/agenda.svg',
-                        width: 24,
-                        height: 24,
-                      ),
-                      onPressed: () {
-                        // Handle button press
-                      },
-                    ),
-                  ],
-                ),
-              ),
+             child: Container(
+  margin: const EdgeInsets.only(right: 16), // إضافة هامش من اليمين
+  child: SizedBox(
+    width: 130,
+    height: 40,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            date, // استبدال النص الثابت بـ date
+            style: const TextStyle(
+              fontSize: 12, // Adjusted size to fit within 26px height
+              fontWeight: FontWeight.bold,
+            ),
+            // overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        IconButton(
+          icon: SvgPicture.asset(
+            'assets/images/agenda.svg',
+            width: 24,
+            height: 24,
+          ),
+          onPressed: () {
+            // Handle button press
+          },
+        ),
+      ],
+    ),
+  ),
+),
             ),
           ),
           const SizedBox(height: 16),

@@ -11,7 +11,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>iq.gov.ur.eyn.womenvisionapp</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -41,15 +41,17 @@
 	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>نحتاج إلى الوصول إلى الميكروفون لتسجيل الصوت.</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>هذا التطبيق يحتاج الوصول إلى مكتبة الموسيقى الخاصة بك.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>We need access to your photo library to update your profile picture and send attachments.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone to upload voice recordings.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library in order to upload images for your profile and attach files such as PDFs or images when sending complaints or suggestions.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>iq.gov.ur.eyn.womenvisionapp</string>
+	<string>iq.gov.ur.eyn.womenvisionapp2</string>
 	<key>PROJECT_ID</key>
 	<string>women-project-2024</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:67746917873:ios:c93ac673673188464da850</string>
+	<string>1:67746917873:ios:8da431c342f021c34da850</string>
 </dict>
 </plist>

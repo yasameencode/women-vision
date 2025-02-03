@@ -1,4 +1,4 @@
-platform :ios, '14.0'
+platform :ios, '14.0' # النسخة المستهدفة، يمكن رفعها حسب الحاجة
 
 # Flutter setup
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -27,10 +27,10 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # الإشارة إلى المجلدات المحلية
-pod 'Firebase/Core'
-pod 'Firebase/Messaging'
-pod 'Firebase/Analytics'
+  # إضافة مكتبات Firebase
+  pod 'Firebase/Core'
+  pod 'Firebase/Messaging'
+  pod 'Firebase/Analytics'
 
   target 'RunnerTests' do
     inherit! :search_paths
@@ -41,8 +41,20 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      # السماح باستخدام المعمارية المناسبة للمحاكي والجهاز
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64' # استثناء arm64 عند استخدام المحاكي
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphoneos*]'] = '' # السماح بجميع المعماريات على الجهاز الحقيقي
+      config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
     end
   end
 end
+
+
+
+
+
+
+
+
+

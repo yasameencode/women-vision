@@ -86,6 +86,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      width: double.infinity,
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         color: Colors.white,

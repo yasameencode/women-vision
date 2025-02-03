@@ -73,8 +73,10 @@ class OnboardingScreen extends StatelessWidget {
   final String imagePath;
   final int currentIndex;
   final int totalPages;
+  double imageSize = 0;
+  double fontSize = 0;
 
-  const OnboardingScreen({
+   OnboardingScreen({
     super.key,
     required this.imagePath,
     required this.currentIndex,
@@ -84,7 +86,7 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height * 0.7;
+    final screenHeight = MediaQuery.of(context).size.height * 0.8;
 
     return Stack(
       children: [
